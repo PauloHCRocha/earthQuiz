@@ -9,6 +9,10 @@ import SwiftUI
 
 struct GameView: View {
     @ObservedObject var gameManager: GameManager
+    @State private var animatingFlags: [String] = []
+    @State private var showFinalFlag = false
+    @State private var currentAnimationIndex = 0
+    @State private var previousRoundIndex = -1
 
     var body: some View {
         VStack(spacing: 20) {
@@ -27,48 +31,130 @@ struct GameView: View {
             .padding()
 
             if let round = gameManager.currentRound {
-                // Country Display
+                // Country Display com animação de scroll
                 VStack(spacing: 15) {
-                    Text(round.country.flag)
-                        .font(.system(size: 100))
-                    Text(round.country.name)
-                        .font(.system(size: 32, weight: .bold))
+                    ZStack {
+                        // Animação de bandeiras
+                        if !showFinalFlag && !animatingFlags.isEmpty {
+                            Text(animatingFlags[currentAnimationIndex % animatingFlags.count])
+                                .font(.system(size: 100))
+                                .transition(.asymmetric(
+                                    insertion: .move(edge: .bottom).combined(with: .opacity),
+                                    removal: .move(edge: .top).combined(with: .opacity)
+                                ))
+                                .id("animating-\(currentAnimationIndex)")
+                        }
+
+                        // Bandeira final
+                        if showFinalFlag {
+                            Text(round.country.flag)
+                                .font(.system(size: 100))
+                                .transition(.scale.combined(with: .opacity))
+                                .id("final-\(round.id)")
+                        }
+                    }
+                    .frame(height: 120)
+
+                    if showFinalFlag {
+                        Text(round.country.name)
+                            .font(.system(size: 32, weight: .bold))
+                            .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    }
                 }
                 .padding()
                 .frame(maxWidth: .infinity)
-                .background(Color.blue.opacity(0.1))
-                .cornerRadius(20)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color.blue.opacity(0.1))
+                        .shadow(color: .blue.opacity(0.1), radius: 10, x: 0, y: 5)
+                )
                 .padding(.horizontal)
+                .onChange(of: gameManager.currentRoundIndex) { oldValue, newValue in
+                    if newValue != previousRoundIndex {
+                        startFlagAnimation()
+                        previousRoundIndex = newValue
+                    }
+                }
+                .onAppear {
+                    if previousRoundIndex == -1 {
+                        startFlagAnimation()
+                        previousRoundIndex = gameManager.currentRoundIndex
+                    }
+                }
 
                 Spacer()
 
                 // Question
-                Text("Qual categoria tem o melhor ranking?")
-                    .font(.title3)
-                    .fontWeight(.semibold)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+                if showFinalFlag {
+                    Text("Qual categoria tem o melhor ranking?")
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                        .transition(.opacity)
+                }
 
                 // Categories
-                VStack(spacing: 15) {
-                    ForEach(round.availableCategories) { category in
-                        CategoryButton(
-                            category: category,
-                            isSelected: round.selectedCategory == category,
-                            isDisabled: round.isCompleted,
-                            ranking: round.selectedCategory == category ? round.country.ranking(for: category) : nil
-                        ) {
-                            if !round.isCompleted {
-                                withAnimation(.spring()) {
-                                    gameManager.selectCategory(category)
+                if showFinalFlag {
+                    VStack(spacing: 15) {
+                        ForEach(round.availableCategories) { category in
+                            CategoryButton(
+                                category: category,
+                                isSelected: round.selectedCategory == category,
+                                isDisabled: round.isCompleted,
+                                ranking: round.selectedCategory == category ? round.country.ranking(for: category) : nil
+                            ) {
+                                if !round.isCompleted {
+                                    HapticManager.shared.selection()
+                                    withAnimation(.spring()) {
+                                        gameManager.selectCategory(category)
+                                    }
                                 }
                             }
                         }
                     }
+                    .padding(.horizontal)
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
                 }
-                .padding(.horizontal)
 
                 Spacer()
+            }
+        }
+    }
+
+    private func startFlagAnimation() {
+        // Reset state
+        withAnimation {
+            showFinalFlag = false
+        }
+        currentAnimationIndex = 0
+
+        // Get random flags for animation
+        let allFlags = CountryData.shared.countries.map { $0.flag }
+        animatingFlags = Array(allFlags.shuffled().prefix(8))
+
+        HapticManager.shared.light()
+
+        // Animate through flags quickly
+        var delay = 0.0
+        for i in 0..<8 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                withAnimation(.easeInOut(duration: 0.1)) {
+                    currentAnimationIndex = i
+                }
+                // Haptic leve durante a animação
+                if i < 7 {
+                    HapticManager.shared.selection()
+                }
+            }
+            delay += 0.08
+        }
+
+        // Show final flag
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay + 0.2) {
+            HapticManager.shared.medium()
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
+                showFinalFlag = true
             }
         }
     }

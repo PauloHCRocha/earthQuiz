@@ -89,6 +89,20 @@ class GameManager: ObservableObject {
         // Update total score
         totalScore += ranking
 
+        // Haptic feedback baseado na pontuação
+        DispatchQueue.main.async {
+            switch ranking {
+            case 1...10:
+                HapticManager.shared.success()
+            case 11...25:
+                HapticManager.shared.medium()
+            case 26...50:
+                HapticManager.shared.light()
+            default:
+                HapticManager.shared.warning()
+            }
+        }
+
         // Move to next round after a delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
             self?.nextRound()
