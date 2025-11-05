@@ -9,90 +9,189 @@ import SwiftUI
 
 struct GameOverView: View {
     @ObservedObject var gameManager: GameManager
+    @State private var showTrophy = false
+    @State private var showScore = false
+    @State private var showRounds = false
 
     var body: some View {
-        VStack(spacing: 25) {
-            Spacer()
+        ScrollView {
+            VStack(spacing: 20) {
+                // Trophy com animação
+                Text("🏆")
+                    .font(.system(size: 100))
+                    .scaleEffect(showTrophy ? 1.0 : 0.1)
+                    .rotationEffect(.degrees(showTrophy ? 0 : 180))
+                    .animation(.spring(response: 0.6, dampingFraction: 0.5), value: showTrophy)
+                    .padding(.top, 20)
 
-            // Trophy
-            Text("🏆")
-                .font(.system(size: 80))
+                // Title
+                Text("Jogo Terminado!")
+                    .font(.system(size: 38, weight: .bold))
+                    .opacity(showTrophy ? 1 : 0)
+                    .animation(.easeIn(duration: 0.3).delay(0.3), value: showTrophy)
 
-            // Title
-            Text("Jogo Terminado!")
-                .font(.system(size: 36, weight: .bold))
+                // Rating com gradiente
+                Text(gameManager.getScoreRating())
+                    .font(.system(size: 26, weight: .bold))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.blue, .purple],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .opacity(showTrophy ? 1 : 0)
+                    .animation(.easeIn(duration: 0.3).delay(0.5), value: showTrophy)
+                    .padding(.bottom, 10)
 
-            // Rating
-            Text(gameManager.getScoreRating())
-                .font(.system(size: 24, weight: .semibold))
-                .foregroundColor(.blue)
+                // Total Score com card melhorado
+                VStack(spacing: 12) {
+                    Text("Pontuação Total")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                        .textCase(.uppercase)
+                        .tracking(1.2)
 
-            // Total Score
-            VStack(spacing: 5) {
-                Text("Pontuação Total")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-                Text("\(gameManager.totalScore)")
-                    .font(.system(size: 56, weight: .bold))
-                    .foregroundColor(.primary)
-                Text("Média: \(gameManager.totalScore / 5)")
-                    .font(.title3)
-                    .foregroundColor(.secondary)
-            }
-            .padding()
+                    Text("\(gameManager.totalScore)")
+                        .font(.system(size: 72, weight: .bold))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: scoreGradientColors,
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
 
-            Spacer()
-
-            // Rounds Summary
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Resumo das Rodadas")
-                    .font(.headline)
-                    .padding(.bottom, 5)
-
-                ForEach(Array(gameManager.rounds.enumerated()), id: \.element.id) { index, round in
-                    if let selectedCategory = round.selectedCategory,
-                       let score = round.score {
-                        HStack {
-                            Text("\(round.country.flag) \(round.country.name)")
-                                .font(.system(size: 14))
-                            Spacer()
-                            Text(selectedCategory.rawValue)
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(.blue)
-                            Text("#\(score)")
-                                .font(.system(size: 14, weight: .bold))
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(scoreColor(for: score))
-                                .foregroundColor(.white)
-                                .cornerRadius(6)
+                    HStack(spacing: 20) {
+                        VStack {
+                            Text("Média")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Text("\(gameManager.totalScore / 5)")
+                                .font(.title2)
+                                .fontWeight(.bold)
                         }
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 12)
-                        .background(Color.secondary.opacity(0.05))
-                        .cornerRadius(10)
+
+                        Divider()
+                            .frame(height: 40)
+
+                        VStack {
+                            Text("Rodadas")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Text("5")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                        }
                     }
                 }
-            }
-            .padding()
-            .background(Color.secondary.opacity(0.1))
-            .cornerRadius(15)
-            .padding(.horizontal)
+                .padding(24)
+                .frame(maxWidth: .infinity)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color.secondary.opacity(0.08))
+                        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
+                )
+                .padding(.horizontal, 20)
+                .scaleEffect(showScore ? 1.0 : 0.8)
+                .opacity(showScore ? 1 : 0)
+                .animation(.spring(response: 0.5, dampingFraction: 0.7).delay(0.7), value: showScore)
 
-            Spacer()
-
-            // Buttons
-            VStack(spacing: 15) {
-                Button(action: {
-                    withAnimation {
-                        gameManager.startNewGame()
+                // Rounds Summary melhorado
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack {
+                        Text("Resumo das Rodadas")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                        Spacer()
+                        Image(systemName: "flag.fill")
+                            .foregroundColor(.blue)
                     }
-                }) {
-                    Text("Jogar Novamente")
-                        .font(.system(size: 18, weight: .semibold))
+                    .padding(.bottom, 4)
+
+                    ForEach(Array(gameManager.rounds.enumerated()), id: \.element.id) { index, round in
+                        if let selectedCategory = round.selectedCategory,
+                           let score = round.score {
+                            HStack(spacing: 12) {
+                                // Round number
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.blue.opacity(0.2))
+                                        .frame(width: 32, height: 32)
+                                    Text("\(index + 1)")
+                                        .font(.system(size: 14, weight: .bold))
+                                        .foregroundColor(.blue)
+                                }
+
+                                // Country
+                                HStack(spacing: 8) {
+                                    Text(round.country.flag)
+                                        .font(.system(size: 24))
+                                    Text(round.country.name)
+                                        .font(.system(size: 15, weight: .medium))
+                                        .lineLimit(1)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+
+                                // Category
+                                HStack(spacing: 4) {
+                                    Image(systemName: selectedCategory.icon)
+                                        .font(.system(size: 10))
+                                    Text(selectedCategory.rawValue)
+                                        .font(.system(size: 11, weight: .medium))
+                                }
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.blue.opacity(0.15))
+                                .foregroundColor(.blue)
+                                .cornerRadius(8)
+
+                                // Score badge
+                                Text("#\(score)")
+                                    .font(.system(size: 15, weight: .bold))
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(scoreColor(for: score))
+                                    .foregroundColor(.white)
+                                    .cornerRadius(10)
+                            }
+                            .padding(12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color.secondary.opacity(0.05))
+                                    .shadow(color: .black.opacity(0.03), radius: 3, x: 0, y: 2)
+                            )
+                            .opacity(showRounds ? 1 : 0)
+                            .offset(x: showRounds ? 0 : -20)
+                            .animation(.easeOut(duration: 0.3).delay(1.0 + Double(index) * 0.1), value: showRounds)
+                        }
+                    }
+                }
+                .padding(20)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color.secondary.opacity(0.08))
+                )
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
+
+                // Buttons melhorados
+                VStack(spacing: 12) {
+                    Button(action: {
+                        HapticManager.shared.medium()
+                        withAnimation {
+                            gameManager.startNewGame()
+                        }
+                    }) {
+                        HStack {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 18, weight: .semibold))
+                            Text("Jogar Novamente")
+                                .font(.system(size: 18, weight: .semibold))
+                        }
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                        .padding()
+                        .padding(.vertical, 16)
                         .background(
                             LinearGradient(
                                 gradient: Gradient(colors: [Color.blue, Color.purple]),
@@ -100,28 +199,59 @@ struct GameOverView: View {
                                 endPoint: .trailing
                             )
                         )
-                        .cornerRadius(15)
-                }
-
-                Button(action: {
-                    withAnimation {
-                        gameManager.resetGame()
+                        .cornerRadius(16)
+                        .shadow(color: .blue.opacity(0.3), radius: 8, x: 0, y: 4)
                     }
-                }) {
-                    Text("Menu Principal")
-                        .font(.system(size: 16, weight: .medium))
+
+                    Button(action: {
+                        HapticManager.shared.light()
+                        withAnimation {
+                            gameManager.resetGame()
+                        }
+                    }) {
+                        HStack {
+                            Image(systemName: "house.fill")
+                                .font(.system(size: 16, weight: .medium))
+                            Text("Menu Principal")
+                                .font(.system(size: 16, weight: .medium))
+                        }
                         .foregroundColor(.blue)
                         .frame(maxWidth: .infinity)
-                        .padding()
+                        .padding(.vertical, 14)
                         .background(Color.secondary.opacity(0.1))
-                        .cornerRadius(15)
+                        .cornerRadius(16)
+                    }
                 }
+                .padding(.horizontal, 30)
+                .padding(.vertical, 20)
             }
-            .padding(.horizontal, 40)
-
-            Spacer()
         }
-        .padding()
+        .onAppear {
+            HapticManager.shared.success()
+            withAnimation {
+                showTrophy = true
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                showScore = true
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                showRounds = true
+            }
+        }
+    }
+
+    private var scoreGradientColors: [Color] {
+        let averageScore = gameManager.totalScore / 5
+        switch averageScore {
+        case 0...10:
+            return [.green, .mint]
+        case 11...25:
+            return [.blue, .cyan]
+        case 26...50:
+            return [.orange, .yellow]
+        default:
+            return [.red, .pink]
+        }
     }
 
     private func scoreColor(for score: Int) -> Color {

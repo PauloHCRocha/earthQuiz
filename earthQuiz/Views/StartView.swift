@@ -56,23 +56,29 @@ struct StartView: View {
 
             // Start Button
             Button(action: {
+                HapticManager.shared.heavy()
                 withAnimation {
                     gameManager.startNewGame()
                 }
             }) {
-                Text("Começar Jogo")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(
-                        LinearGradient(
-                            gradient: Gradient(colors: [Color.blue, Color.purple]),
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
+                HStack {
+                    Image(systemName: "play.fill")
+                        .font(.system(size: 18, weight: .semibold))
+                    Text("Começar Jogo")
+                        .font(.system(size: 20, weight: .semibold))
+                }
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(
+                    LinearGradient(
+                        gradient: Gradient(colors: [Color.blue, Color.purple]),
+                        startPoint: .leading,
+                        endPoint: .trailing
                     )
-                    .cornerRadius(15)
+                )
+                .cornerRadius(15)
+                .shadow(color: .blue.opacity(0.3), radius: 10, x: 0, y: 5)
             }
             .padding(.horizontal, 40)
 
