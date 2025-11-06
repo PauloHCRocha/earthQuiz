@@ -11,8 +11,9 @@ struct GameView: View {
     @ObservedObject var gameManager: GameManager
     @State private var animatingFlags: [String] = []
     @State private var showFinalFlag = false
-    @State private var currentAnimationIndex = 0
+    @State private var scrollOffset: CGFloat = 0
     @State private var previousRoundIndex = -1
+    @State private var isAnimating = false
 
     var body: some View {
         VStack(spacing: 20) {
@@ -31,26 +32,31 @@ struct GameView: View {
             .padding()
 
             if let round = gameManager.currentRound {
-                // Country Display com animação de scroll
+                // Country Display com animação de scroll horizontal
                 VStack(spacing: 15) {
+                    // Container para o scroll horizontal
                     ZStack {
-                        // Animação de bandeiras
-                        if !showFinalFlag && !animatingFlags.isEmpty {
-                            Text(animatingFlags[currentAnimationIndex % animatingFlags.count])
-                                .font(.system(size: 100))
-                                .transition(.asymmetric(
-                                    insertion: .move(edge: .bottom).combined(with: .opacity),
-                                    removal: .move(edge: .top).combined(with: .opacity)
-                                ))
-                                .id("animating-\(currentAnimationIndex)")
+                        if isAnimating {
+                            // Scroll horizontal de bandeiras
+                            HStack(spacing: 30) {
+                                ForEach(Array(animatingFlags.enumerated()), id: \.offset) { index, flag in
+                                    Text(flag)
+                                        .font(.system(size: 100))
+                                        .opacity(0.7)
+                                }
+                            }
+                            .offset(x: scrollOffset)
+                            .frame(maxWidth: .infinity)
+                            .clipped()
                         }
 
-                        // Bandeira final
+                        // Bandeira final com animação easeOutBack
                         if showFinalFlag {
                             Text(round.country.flag)
                                 .font(.system(size: 100))
-                                .transition(.scale.combined(with: .opacity))
-                                .id("final-\(round.id)")
+                                .scaleEffect(showFinalFlag ? 1.0 : 0.3)
+                                .opacity(showFinalFlag ? 1.0 : 0)
+                                .rotationEffect(.degrees(showFinalFlag ? 0 : -180))
                         }
                     }
                     .frame(height: 120)
@@ -124,37 +130,59 @@ struct GameView: View {
 
     private func startFlagAnimation() {
         // Reset state
-        withAnimation {
-            showFinalFlag = false
-        }
-        currentAnimationIndex = 0
+        showFinalFlag = false
+        isAnimating = false
+        scrollOffset = 0
 
         // Get random flags for animation
         let allFlags = CountryData.shared.countries.map { $0.flag }
-        animatingFlags = Array(allFlags.shuffled().prefix(8))
+        animatingFlags = Array(allFlags.shuffled().prefix(12))
 
         HapticManager.shared.light()
 
-        // Animate through flags quickly
-        var delay = 0.0
-        for i in 0..<8 {
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                withAnimation(.easeInOut(duration: 0.1)) {
-                    currentAnimationIndex = i
-                }
-                // Haptic leve durante a animação
-                if i < 7 {
+        // Start scroll animation after a tiny delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            isAnimating = true
+
+            // Position inicial (todas as bandeiras à direita)
+            scrollOffset = 400
+
+            // Animate scroll horizontal com aceleração
+            // Fase 1: Scroll rápido inicial (0.8s)
+            withAnimation(.timingCurve(0.25, 0.1, 0.25, 1, duration: 0.8)) {
+                scrollOffset = -1200
+            }
+
+            // Haptic durante o scroll
+            for i in 0..<6 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.12) {
                     HapticManager.shared.selection()
                 }
             }
-            delay += 0.08
-        }
 
-        // Show final flag
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay + 0.2) {
-            HapticManager.shared.medium()
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
-                showFinalFlag = true
+            // Fase 2: Desaceleração gradual (0.4s)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                withAnimation(.timingCurve(0.25, 0.1, 0.25, 1, duration: 0.4)) {
+                    scrollOffset = -2000
+                }
+            }
+
+            // Fase 3: Final com leve bounce back (0.3s)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                withAnimation(.timingCurve(0.34, 1.56, 0.64, 1, duration: 0.3)) {
+                    scrollOffset = -2200
+                }
+            }
+
+            // Esconder scroll e mostrar bandeira final
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                isAnimating = false
+                HapticManager.shared.medium()
+
+                // Mostrar bandeira final com easeOutBack
+                withAnimation(.timingCurve(0.34, 1.56, 0.64, 1, duration: 0.6)) {
+                    showFinalFlag = true
+                }
             }
         }
     }
