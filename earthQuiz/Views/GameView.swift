@@ -40,13 +40,12 @@ struct GameView: View {
                         // Versão simplificada: uma bandeira de cada vez que muda rapidamente
                         if isAnimating && !animatingFlags.isEmpty {
                             Text(animatingFlags[currentFlagIndex % animatingFlags.count])
-                                .font(.system(size: 90))
-                                .opacity(0.4)
-                                .blur(radius: 2)
+                                .font(.system(size: 95))
+                                .opacity(0.85)
                                 .id("flag-\(currentFlagIndex)")
                                 .transition(.asymmetric(
-                                    insertion: .move(edge: .trailing).combined(with: .opacity),
-                                    removal: .move(edge: .leading).combined(with: .opacity)
+                                    insertion: .move(edge: .trailing),
+                                    removal: .move(edge: .leading)
                                 ))
                         }
 
@@ -138,43 +137,45 @@ struct GameView: View {
 
         // Get random flags for animation
         let allFlags = CountryData.shared.countries.map { $0.flag }
-        animatingFlags = Array(allFlags.shuffled().prefix(12))
+        animatingFlags = Array(allFlags.shuffled().prefix(15))
 
         HapticManager.shared.light()
 
-        // Start animation com delay mínimo
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            withAnimation {
-                isAnimating = true
-            }
+        // Start IMEDIATAMENTE - sem delay!
+        isAnimating = true
 
-            // Ciclar através das bandeiras rapidamente - SLOT MACHINE EFFECT
-            for i in 0..<12 {
-                DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.1) {
-                    withAnimation(.easeInOut(duration: 0.08)) {
-                        currentFlagIndex = i
-                    }
+        // Ciclar através das bandeiras rapidamente - SLOT MACHINE EFFECT
+        // Começa devagar e acelera (velocidade variável)
+        let intervals: [Double] = [0.15, 0.13, 0.11, 0.09, 0.07, 0.06, 0.06, 0.06, 0.07, 0.08, 0.10, 0.12, 0.15, 0.18, 0.22]
 
-                    // Haptic em algumas iterações
-                    if i % 2 == 0 {
-                        HapticManager.shared.selection()
-                    }
-                }
-            }
+        var cumulativeTime = 0.0
+        for i in 0..<15 {
+            cumulativeTime += intervals[i]
 
-            // Esconder animação e mostrar bandeira final
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.3) {
-                withAnimation {
-                    isAnimating = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + cumulativeTime) {
+                withAnimation(.linear(duration: intervals[i] * 0.8)) {
+                    currentFlagIndex = i
                 }
 
-                HapticManager.shared.medium()
+                // Haptic nos primeiros e últimos
+                if i < 5 || i > 10 {
+                    HapticManager.shared.selection()
+                }
+            }
+        }
 
-                // Mostrar bandeira final com easeOutBack
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    withAnimation(.timingCurve(0.34, 1.56, 0.64, 1, duration: 0.7)) {
-                        showFinalFlag = true
-                    }
+        // Esconder animação e mostrar bandeira final
+        DispatchQueue.main.asyncAfter(deadline: .now() + cumulativeTime + 0.2) {
+            withAnimation(.easeOut(duration: 0.15)) {
+                isAnimating = false
+            }
+
+            HapticManager.shared.medium()
+
+            // Mostrar bandeira final com easeOutBack
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                withAnimation(.timingCurve(0.34, 1.56, 0.64, 1, duration: 0.6)) {
+                    showFinalFlag = true
                 }
             }
         }
