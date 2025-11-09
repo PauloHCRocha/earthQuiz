@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		8C3E77FB2EBE7CF700C2D56F /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3E77FA2EBE7CF700C2D56F /* HapticManager.swift */; };
+		8C3E77FF2EC020FE00C2D56F /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3E77FE2EC020FE00C2D56F /* HapticManager.swift */; };
 		A00000010000000000000001 /* earthQuizApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000020000000000000001 /* earthQuizApp.swift */; };
 		A00000030000000000000001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000040000000000000001 /* ContentView.swift */; };
 		A00000050000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A00000060000000000000001 /* Assets.xcassets */; };
@@ -23,7 +23,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		8C3E77FA2EBE7CF700C2D56F /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
+		8C3E77FE2EC020FE00C2D56F /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
 		A00000020000000000000001 /* earthQuizApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = earthQuizApp.swift; sourceTree = "<group>"; };
 		A00000040000000000000001 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A00000060000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -105,7 +105,7 @@
 				A00000200000000000000001 /* StartView.swift */,
 				A00000220000000000000001 /* GameView.swift */,
 				A00000240000000000000001 /* GameOverView.swift */,
-				8C3E77FA2EBE7CF700C2D56F /* HapticManager.swift */,
+				8C3E77FE2EC020FE00C2D56F /* HapticManager.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -204,8 +204,8 @@
 				A00000170000000000000001 /* CountryData.swift in Sources */,
 				A00000190000000000000001 /* StartView.swift in Sources */,
 				A00000210000000000000001 /* GameView.swift in Sources */,
-				8C3E77FB2EBE7CF700C2D56F /* HapticManager.swift in Sources */,
 				A00000230000000000000001 /* GameOverView.swift in Sources */,
+				8C3E77FF2EC020FE00C2D56F /* HapticManager.swift in Sources */,
 				A00000010000000000000001 /* earthQuizApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
