@@ -135,39 +135,31 @@ struct GameView: View {
                     .transition(.scale.combined(with: .opacity))
                 }
 
-                // Categories - Show ALL categories
-                if showFinalFlag {
-                    ScrollView {
-                        VStack(spacing: 12) {
-                            ForEach(Category.allCases) { category in
-                                CategoryButton(
-                                    category: category,
-                                    country: round.country,
-                                    isSelected: round.selectedCategory == category,
-                                    isAvailable: round.availableCategories.contains(category),
-                                    isDisabled: round.isCompleted,
-                                    showRanking: round.isCompleted || round.selectedCategory == category,
-                                    isBestCategory: gameManager.getOptimalScoreForRound(round)?.category == category
-                                ) {
-                                    if !round.isCompleted && round.availableCategories.contains(category) {
-                                        HapticManager.shared.selection()
-                                        withAnimation(.spring()) {
-                                            gameManager.selectCategory(category)
-                                            // Show all rankings after selection
-                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                                withAnimation {
-                                                    showAllRankings = true
-                                                }
-                                            }
-                                        }
+                // Categories - Always visible (even during animation)
+                ScrollView {
+                    VStack(spacing: 12) {
+                        ForEach(round.availableCategories) { category in
+                            CategoryButton(
+                                category: category,
+                                country: round.country,
+                                isSelected: round.selectedCategory == category,
+                                isAvailable: true,
+                                isDisabled: round.isCompleted || isAnimating,
+                                showRanking: round.selectedCategory == category,
+                                isBestCategory: round.isCompleted && gameManager.getOptimalScoreForRound(round)?.category == category
+                            ) {
+                                if !round.isCompleted && !isAnimating {
+                                    HapticManager.shared.selection()
+                                    withAnimation(.spring()) {
+                                        gameManager.selectCategory(category)
                                     }
                                 }
                             }
                         }
-                        .padding(.horizontal)
                     }
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    .padding(.horizontal)
                 }
+                .opacity(isAnimating ? 0.5 : 1.0)
 
                 Spacer(minLength: 10)
             }
@@ -240,20 +232,16 @@ struct CategoryButton: View {
         country.ranking(for: category)
     }
 
+    private var points: Int {
+        101 - ranking
+    }
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                // Show lock icon for unavailable categories
-                if !isAvailable {
-                    Image(systemName: "lock.fill")
-                        .font(.system(size: 16))
-                        .foregroundColor(.secondary.opacity(0.5))
-                        .frame(width: 38)
-                } else {
-                    Image(systemName: category.icon)
-                        .font(.system(size: 22))
-                        .frame(width: 38)
-                }
+                Image(systemName: category.icon)
+                    .font(.system(size: 22))
+                    .frame(width: 38)
 
                 Text(category.rawValue)
                     .font(.system(size: 17, weight: .semibold))
@@ -261,22 +249,27 @@ struct CategoryButton: View {
 
                 Spacer()
 
-                // Show star for best category (only if it was available)
-                if isBestCategory && isDisabled && isAvailable {
+                // Show star for best category after round is completed
+                if isBestCategory {
                     Image(systemName: "star.fill")
                         .font(.system(size: 14))
                         .foregroundColor(.yellow)
                 }
 
-                // Show ranking for selected category or if round is completed and category was available
-                if showRanking && isAvailable {
-                    Text("#\(ranking)")
-                        .font(.system(size: 17, weight: .bold))
-                        .padding(.horizontal, 11)
-                        .padding(.vertical, 6)
-                        .background(rankingColor(for: ranking))
-                        .foregroundColor(.white)
-                        .cornerRadius(9)
+                // Show ranking and points for selected category
+                if showRanking {
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text("+\(points)")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(.white)
+                        Text("#\(ranking)")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.8))
+                    }
+                    .padding(.horizontal, 11)
+                    .padding(.vertical, 6)
+                    .background(rankingColor(for: ranking))
+                    .cornerRadius(9)
                 }
             }
             .padding(.horizontal, 14)
@@ -288,18 +281,16 @@ struct CategoryButton: View {
             .shadow(color: isSelected ? .blue.opacity(0.3) : .clear, radius: 8)
             .overlay(
                 RoundedRectangle(cornerRadius: 14)
-                    .stroke(isBestCategory && isDisabled && isAvailable ? Color.yellow : Color.clear, lineWidth: 2)
+                    .stroke(isBestCategory ? Color.yellow : Color.clear, lineWidth: 2)
             )
             .scaleEffect(isSelected ? 1.02 : 1.0)
         }
-        .disabled(!isAvailable || (isDisabled && !isSelected))
+        .disabled(isDisabled)
     }
 
     private var backgroundColor: Color {
         if isSelected {
             return Color.blue
-        } else if !isAvailable {
-            return Color.secondary.opacity(0.05)
         } else if isDisabled {
             return Color.secondary.opacity(0.08)
         } else {
@@ -310,8 +301,6 @@ struct CategoryButton: View {
     private var foregroundColor: Color {
         if isSelected {
             return .white
-        } else if !isAvailable {
-            return .secondary.opacity(0.4)
         } else if isDisabled {
             return .secondary
         } else {
