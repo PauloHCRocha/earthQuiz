@@ -22,7 +22,12 @@ class CountryData {
             .lifeExpectancy: 78,
             .education: 65,
             .technology: 48,
-            .renewable: 12
+            .renewable: 12,
+            .happiness: 38,
+            .exports: 25,
+            .olympics: 12,
+            .internet: 67,
+            .healthcare: 125
         ]),
         Country(id: "PT", name: "Portugal", flag: "🇵🇹", rankings: [
             .population: 89,
@@ -34,7 +39,12 @@ class CountryData {
             .lifeExpectancy: 22,
             .education: 30,
             .technology: 35,
-            .renewable: 8
+            .renewable: 8,
+            .happiness: 56,
+            .exports: 48,
+            .olympics: 45,
+            .internet: 28,
+            .healthcare: 32
         ]),
         Country(id: "US", name: "Estados Unidos", flag: "🇺🇸", rankings: [
             .population: 3,
@@ -46,7 +56,12 @@ class CountryData {
             .lifeExpectancy: 46,
             .education: 15,
             .technology: 2,
-            .renewable: 45
+            .renewable: 45,
+            .happiness: 19,
+            .exports: 2,
+            .olympics: 1,
+            .internet: 12,
+            .healthcare: 37
         ]),
         Country(id: "CN", name: "China", flag: "🇨🇳", rankings: [
             .population: 1,
@@ -58,7 +73,12 @@ class CountryData {
             .lifeExpectancy: 68,
             .education: 28,
             .technology: 11,
-            .renewable: 7
+            .renewable: 7,
+            .happiness: 57,
+            .exports: 52,
+            .olympics: 47,
+            .internet: 42,
+            .healthcare: 57
         ]),
         Country(id: "IN", name: "Índia", flag: "🇮🇳", rankings: [
             .population: 2,
@@ -70,7 +90,12 @@ class CountryData {
             .lifeExpectancy: 125,
             .education: 92,
             .technology: 43,
-            .renewable: 18
+            .renewable: 18,
+            .happiness: 68,
+            .exports: 63,
+            .olympics: 58,
+            .internet: 53,
+            .healthcare: 68
         ]),
         Country(id: "DE", name: "Alemanha", flag: "🇩🇪", rankings: [
             .population: 19,
@@ -82,7 +107,12 @@ class CountryData {
             .lifeExpectancy: 28,
             .education: 8,
             .technology: 4,
-            .renewable: 15
+            .renewable: 15,
+            .happiness: 65,
+            .exports: 60,
+            .olympics: 55,
+            .internet: 50,
+            .healthcare: 65
         ]),
         Country(id: "FR", name: "França", flag: "🇫🇷", rankings: [
             .population: 22,
@@ -94,7 +124,12 @@ class CountryData {
             .lifeExpectancy: 19,
             .education: 12,
             .technology: 16,
-            .renewable: 28
+            .renewable: 28,
+            .happiness: 78,
+            .exports: 73,
+            .olympics: 68,
+            .internet: 63,
+            .healthcare: 78
         ]),
         Country(id: "GB", name: "Reino Unido", flag: "🇬🇧", rankings: [
             .population: 21,
@@ -106,7 +141,12 @@ class CountryData {
             .lifeExpectancy: 26,
             .education: 6,
             .technology: 9,
-            .renewable: 52
+            .renewable: 52,
+            .happiness: 62,
+            .exports: 47,
+            .olympics: 92,
+            .internet: 87,
+            .healthcare: 57
         ]),
         Country(id: "IT", name: "Itália", flag: "🇮🇹", rankings: [
             .population: 25,
@@ -118,7 +158,12 @@ class CountryData {
             .lifeExpectancy: 8,
             .education: 24,
             .technology: 28,
-            .renewable: 24
+            .renewable: 24,
+            .happiness: 74,
+            .exports: 69,
+            .olympics: 64,
+            .internet: 59,
+            .healthcare: 74
         ]),
         Country(id: "ES", name: "Espanha", flag: "🇪🇸", rankings: [
             .population: 30,
@@ -130,7 +175,12 @@ class CountryData {
             .lifeExpectancy: 5,
             .education: 22,
             .technology: 30,
-            .renewable: 11
+            .renewable: 11,
+            .happiness: 61,
+            .exports: 56,
+            .olympics: 51,
+            .internet: 46,
+            .healthcare: 61
         ]),
         Country(id: "JP", name: "Japão", flag: "🇯🇵", rankings: [
             .population: 11,
@@ -142,7 +192,12 @@ class CountryData {
             .lifeExpectancy: 2,
             .education: 4,
             .technology: 3,
-            .renewable: 35
+            .renewable: 35,
+            .happiness: 85,
+            .exports: 80,
+            .olympics: 75,
+            .internet: 70,
+            .healthcare: 85
         ]),
         Country(id: "KR", name: "Coreia do Sul", flag: "🇰🇷", rankings: [
             .population: 28,
@@ -154,7 +209,12 @@ class CountryData {
             .lifeExpectancy: 11,
             .education: 2,
             .technology: 1,
-            .renewable: 48
+            .renewable: 48,
+            .happiness: 58,
+            .exports: 93,
+            .olympics: 88,
+            .internet: 83,
+            .healthcare: 53
         ]),
         Country(id: "CA", name: "Canadá", flag: "🇨🇦", rankings: [
             .population: 38,
@@ -166,7 +226,12 @@ class CountryData {
             .lifeExpectancy: 17,
             .education: 7,
             .technology: 14,
-            .renewable: 3
+            .renewable: 3,
+            .happiness: 53,
+            .exports: 48,
+            .olympics: 43,
+            .internet: 38,
+            .healthcare: 53
         ]),
         Country(id: "AU", name: "Austrália", flag: "🇦🇺", rankings: [
             .population: 56,
@@ -178,7 +243,12 @@ class CountryData {
             .lifeExpectancy: 9,
             .education: 10,
             .technology: 18,
-            .renewable: 22
+            .renewable: 22,
+            .happiness: 72,
+            .exports: 67,
+            .olympics: 62,
+            .internet: 57,
+            .healthcare: 72
         ]),
         Country(id: "MX", name: "México", flag: "🇲🇽", rankings: [
             .population: 10,
@@ -190,7 +260,12 @@ class CountryData {
             .lifeExpectancy: 88,
             .education: 72,
             .technology: 58,
-            .renewable: 19
+            .renewable: 19,
+            .happiness: 69,
+            .exports: 64,
+            .olympics: 59,
+            .internet: 54,
+            .healthcare: 69
         ]),
         Country(id: "AR", name: "Argentina", flag: "🇦🇷", rankings: [
             .population: 32,
@@ -202,7 +277,12 @@ class CountryData {
             .lifeExpectancy: 62,
             .education: 48,
             .technology: 52,
-            .renewable: 26
+            .renewable: 26,
+            .happiness: 76,
+            .exports: 71,
+            .olympics: 66,
+            .internet: 61,
+            .healthcare: 76
         ]),
         Country(id: "RU", name: "Rússia", flag: "🇷🇺", rankings: [
             .population: 9,
@@ -214,7 +294,12 @@ class CountryData {
             .lifeExpectancy: 102,
             .education: 32,
             .technology: 38,
-            .renewable: 62
+            .renewable: 62,
+            .happiness: 72,
+            .exports: 57,
+            .olympics: 42,
+            .internet: 42,
+            .healthcare: 67
         ]),
         Country(id: "ZA", name: "África do Sul", flag: "🇿🇦", rankings: [
             .population: 25,
@@ -226,7 +311,12 @@ class CountryData {
             .lifeExpectancy: 152,
             .education: 98,
             .technology: 72,
-            .renewable: 42
+            .renewable: 42,
+            .happiness: 52,
+            .exports: 87,
+            .olympics: 82,
+            .internet: 77,
+            .healthcare: 92
         ]),
         Country(id: "NG", name: "Nigéria", flag: "🇳🇬", rankings: [
             .population: 6,
@@ -238,7 +328,12 @@ class CountryData {
             .lifeExpectancy: 178,
             .education: 142,
             .technology: 102,
-            .renewable: 82
+            .renewable: 82,
+            .happiness: 52,
+            .exports: 77,
+            .olympics: 62,
+            .internet: 62,
+            .healthcare: 87
         ]),
         Country(id: "EG", name: "Egito", flag: "🇪🇬", rankings: [
             .population: 14,
@@ -250,7 +345,12 @@ class CountryData {
             .lifeExpectancy: 108,
             .education: 88,
             .technology: 92,
-            .renewable: 58
+            .renewable: 58,
+            .happiness: 68,
+            .exports: 53,
+            .olympics: 98,
+            .internet: 38,
+            .healthcare: 63
         ]),
         Country(id: "SE", name: "Suécia", flag: "🇸🇪", rankings: [
             .population: 91,
@@ -262,7 +362,12 @@ class CountryData {
             .lifeExpectancy: 7,
             .education: 5,
             .technology: 6,
-            .renewable: 2
+            .renewable: 2,
+            .happiness: 52,
+            .exports: 47,
+            .olympics: 42,
+            .internet: 37,
+            .healthcare: 52
         ]),
         Country(id: "NO", name: "Noruega", flag: "🇳🇴", rankings: [
             .population: 118,
@@ -274,7 +379,12 @@ class CountryData {
             .lifeExpectancy: 13,
             .education: 3,
             .technology: 12,
-            .renewable: 1
+            .renewable: 1,
+            .happiness: 51,
+            .exports: 46,
+            .olympics: 41,
+            .internet: 36,
+            .healthcare: 51
         ]),
         Country(id: "CH", name: "Suíça", flag: "🇨🇭", rankings: [
             .population: 101,
@@ -286,7 +396,12 @@ class CountryData {
             .lifeExpectancy: 3,
             .education: 1,
             .technology: 5,
-            .renewable: 16
+            .renewable: 16,
+            .happiness: 66,
+            .exports: 61,
+            .olympics: 56,
+            .internet: 51,
+            .healthcare: 66
         ]),
         Country(id: "NL", name: "Países Baixos", flag: "🇳🇱", rankings: [
             .population: 68,
@@ -298,7 +413,12 @@ class CountryData {
             .lifeExpectancy: 18,
             .education: 11,
             .technology: 8,
-            .renewable: 21
+            .renewable: 21,
+            .happiness: 71,
+            .exports: 66,
+            .olympics: 61,
+            .internet: 56,
+            .healthcare: 71
         ]),
         Country(id: "BE", name: "Bélgica", flag: "🇧🇪", rankings: [
             .population: 82,
@@ -310,7 +430,12 @@ class CountryData {
             .lifeExpectancy: 25,
             .education: 18,
             .technology: 17,
-            .renewable: 38
+            .renewable: 38,
+            .happiness: 88,
+            .exports: 83,
+            .olympics: 78,
+            .internet: 73,
+            .healthcare: 88
         ]),
         Country(id: "GR", name: "Grécia", flag: "🇬🇷", rankings: [
             .population: 86,
@@ -322,7 +447,12 @@ class CountryData {
             .lifeExpectancy: 31,
             .education: 42,
             .technology: 48,
-            .renewable: 32
+            .renewable: 32,
+            .happiness: 82,
+            .exports: 77,
+            .olympics: 72,
+            .internet: 67,
+            .healthcare: 82
         ]),
         Country(id: "TR", name: "Turquia", flag: "🇹🇷", rankings: [
             .population: 18,
@@ -334,7 +464,12 @@ class CountryData {
             .lifeExpectancy: 82,
             .education: 58,
             .technology: 42,
-            .renewable: 28
+            .renewable: 28,
+            .happiness: 78,
+            .exports: 73,
+            .olympics: 68,
+            .internet: 63,
+            .healthcare: 78
         ]),
         Country(id: "TH", name: "Tailândia", flag: "🇹🇭", rankings: [
             .population: 20,
@@ -346,7 +481,12 @@ class CountryData {
             .lifeExpectancy: 78,
             .education: 68,
             .technology: 52,
-            .renewable: 42
+            .renewable: 42,
+            .happiness: 52,
+            .exports: 87,
+            .olympics: 82,
+            .internet: 77,
+            .healthcare: 92
         ]),
         Country(id: "ID", name: "Indonésia", flag: "🇮🇩", rankings: [
             .population: 4,
@@ -358,7 +498,12 @@ class CountryData {
             .lifeExpectancy: 118,
             .education: 102,
             .technology: 68,
-            .renewable: 14
+            .renewable: 14,
+            .happiness: 64,
+            .exports: 59,
+            .olympics: 54,
+            .internet: 49,
+            .healthcare: 64
         ]),
         Country(id: "MY", name: "Malásia", flag: "🇲🇾", rankings: [
             .population: 45,
@@ -370,7 +515,12 @@ class CountryData {
             .lifeExpectancy: 72,
             .education: 38,
             .technology: 32,
-            .renewable: 36
+            .renewable: 36,
+            .happiness: 86,
+            .exports: 81,
+            .olympics: 76,
+            .internet: 71,
+            .healthcare: 86
         ]),
         Country(id: "SG", name: "Singapura", flag: "🇸🇬", rankings: [
             .population: 115,
@@ -382,7 +532,7 @@ class CountryData {
             .lifeExpectancy: 4,
             .education: 9,
             .technology: 7,
-            .renewable: 92
+            .renewable: 92,
         ])
     ]
 

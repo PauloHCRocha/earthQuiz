@@ -11,16 +11,16 @@ struct GameView: View {
     @ObservedObject var gameManager: GameManager
     @State private var animatingFlags: [String] = []
     @State private var showFinalFlag = false
-    @State private var scrollOffset: CGFloat = 0
     @State private var previousRoundIndex = -1
     @State private var isAnimating = false
     @State private var currentFlagIndex = 0
+    @State private var showAllRankings = false
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 16) {
             // Header
             HStack {
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text("Round \(gameManager.currentRoundIndex + 1)/5")
                         .font(.headline)
                         .foregroundColor(.secondary)
@@ -29,15 +29,36 @@ struct GameView: View {
                         .fontWeight(.bold)
                 }
                 Spacer()
+
+                // Skip button
+                if gameManager.skipsRemaining > 0 && !gameManager.hasSkippedCurrentRound {
+                    Button(action: {
+                        withAnimation {
+                            gameManager.skipCurrentCountry()
+                        }
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "forward.fill")
+                                .font(.system(size: 14))
+                            Text("Skip")
+                                .font(.system(size: 14, weight: .semibold))
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color.orange)
+                        .cornerRadius(10)
+                    }
+                }
             }
-            .padding()
+            .padding(.horizontal)
+            .padding(.top)
 
             if let round = gameManager.currentRound {
-                // Country Display com animação de scroll horizontal
-                VStack(spacing: 15) {
-                    // Container com animação simplificada e garantida
+                // Country Display com animação
+                VStack(spacing: 12) {
                     ZStack {
-                        // Versão simplificada: uma bandeira de cada vez que muda rapidamente
+                        // Slot machine animation
                         if isAnimating && !animatingFlags.isEmpty {
                             Text(animatingFlags[currentFlagIndex % animatingFlags.count])
                                 .font(.system(size: 95))
@@ -49,7 +70,7 @@ struct GameView: View {
                                 ))
                         }
 
-                        // Bandeira final com animação easeOutBack
+                        // Final flag
                         if showFinalFlag {
                             Text(round.country.flag)
                                 .font(.system(size: 100))
@@ -58,16 +79,15 @@ struct GameView: View {
                                 .rotationEffect(.degrees(showFinalFlag ? 0 : -180))
                         }
                     }
-                    .frame(height: 120)
-                    .frame(maxWidth: .infinity)
+                    .frame(height: 110)
 
                     if showFinalFlag {
                         Text(round.country.name)
-                            .font(.system(size: 32, weight: .bold))
+                            .font(.system(size: 30, weight: .bold))
                             .transition(.opacity.combined(with: .move(edge: .bottom)))
                     }
                 }
-                .padding()
+                .padding(.vertical, 12)
                 .frame(maxWidth: .infinity)
                 .background(
                     RoundedRectangle(cornerRadius: 20)
@@ -77,6 +97,7 @@ struct GameView: View {
                 .padding(.horizontal)
                 .onChange(of: gameManager.currentRoundIndex) { oldValue, newValue in
                     if newValue != previousRoundIndex {
+                        showAllRankings = false
                         startFlagAnimation()
                         previousRoundIndex = newValue
                     }
@@ -88,10 +109,8 @@ struct GameView: View {
                     }
                 }
 
-                Spacer()
-
                 // Question
-                if showFinalFlag {
+                if showFinalFlag && !round.isCompleted {
                     Text("Qual categoria tem o melhor ranking?")
                         .font(.title3)
                         .fontWeight(.semibold)
@@ -100,81 +119,105 @@ struct GameView: View {
                         .transition(.opacity)
                 }
 
+                // Show best category hint if round is completed
+                if round.isCompleted, let optimal = gameManager.getOptimalScoreForRound(round) {
+                    HStack {
+                        Image(systemName: "star.fill")
+                            .foregroundColor(.yellow)
+                        Text("Melhor: \(optimal.category.rawValue) (#\(optimal.ranking))")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(.green)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.green.opacity(0.15))
+                    .cornerRadius(10)
+                    .transition(.scale.combined(with: .opacity))
+                }
+
                 // Categories
                 if showFinalFlag {
-                    VStack(spacing: 15) {
-                        ForEach(round.availableCategories) { category in
-                            CategoryButton(
-                                category: category,
-                                isSelected: round.selectedCategory == category,
-                                isDisabled: round.isCompleted,
-                                ranking: round.selectedCategory == category ? round.country.ranking(for: category) : nil
-                            ) {
-                                if !round.isCompleted {
-                                    HapticManager.shared.selection()
-                                    withAnimation(.spring()) {
-                                        gameManager.selectCategory(category)
+                    ScrollView {
+                        VStack(spacing: 12) {
+                            ForEach(round.availableCategories) { category in
+                                CategoryButton(
+                                    category: category,
+                                    country: round.country,
+                                    isSelected: round.selectedCategory == category,
+                                    isDisabled: round.isCompleted,
+                                    showRanking: round.isCompleted || round.selectedCategory == category,
+                                    isBestCategory: gameManager.getOptimalScoreForRound(round)?.category == category
+                                ) {
+                                    if !round.isCompleted {
+                                        HapticManager.shared.selection()
+                                        withAnimation(.spring()) {
+                                            gameManager.selectCategory(category)
+                                            // Show all rankings after selection
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                                withAnimation {
+                                                    showAllRankings = true
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
+                        .padding(.horizontal)
                     }
-                    .padding(.horizontal)
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
                 }
 
-                Spacer()
+                Spacer(minLength: 10)
             }
         }
     }
 
     private func startFlagAnimation() {
-        // Reset state completamente
+        // Reset state
         showFinalFlag = false
         isAnimating = false
-        scrollOffset = 0
         currentFlagIndex = 0
 
-        // Get random flags for animation
+        // Get random flags
         let allFlags = CountryData.shared.countries.map { $0.flag }
-        animatingFlags = Array(allFlags.shuffled().prefix(15))
+        animatingFlags = Array(allFlags.shuffled().prefix(18))
 
         HapticManager.shared.light()
 
-        // Start IMEDIATAMENTE - sem delay!
+        // Start immediately
         isAnimating = true
 
-        // Ciclar através das bandeiras rapidamente - SLOT MACHINE EFFECT
-        // Começa devagar e acelera (velocidade variável)
-        let intervals: [Double] = [0.15, 0.13, 0.11, 0.09, 0.07, 0.06, 0.06, 0.06, 0.07, 0.08, 0.10, 0.12, 0.15, 0.18, 0.22]
+        // Variable speed intervals (slot machine effect)
+        let intervals: [Double] = [0.12, 0.11, 0.10, 0.08, 0.07, 0.06, 0.05, 0.05, 0.05, 0.06, 0.07, 0.08, 0.10, 0.12, 0.15, 0.18, 0.22, 0.28]
 
         var cumulativeTime = 0.0
-        for i in 0..<15 {
+        for i in 0..<18 {
             cumulativeTime += intervals[i]
 
             DispatchQueue.main.asyncAfter(deadline: .now() + cumulativeTime) {
-                withAnimation(.linear(duration: intervals[i] * 0.8)) {
+                withAnimation(.linear(duration: intervals[i] * 0.75)) {
                     currentFlagIndex = i
                 }
 
-                // Haptic nos primeiros e últimos
-                if i < 5 || i > 10 {
+                // Haptic at key moments
+                if i < 4 || i > 13 {
                     HapticManager.shared.selection()
                 }
             }
         }
 
-        // Esconder animação e mostrar bandeira final
+        // Hide animation and show final flag
         DispatchQueue.main.asyncAfter(deadline: .now() + cumulativeTime + 0.2) {
-            withAnimation(.easeOut(duration: 0.15)) {
+            withAnimation(.easeOut(duration: 0.12)) {
                 isAnimating = false
             }
 
             HapticManager.shared.medium()
 
-            // Mostrar bandeira final com easeOutBack
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                withAnimation(.timingCurve(0.34, 1.56, 0.64, 1, duration: 0.6)) {
+            // Show final flag with easeOutBack
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                withAnimation(.timingCurve(0.34, 1.56, 0.64, 1, duration: 0.55)) {
                     showFinalFlag = true
                 }
             }
@@ -184,48 +227,69 @@ struct GameView: View {
 
 struct CategoryButton: View {
     let category: Category
+    let country: Country
     let isSelected: Bool
     let isDisabled: Bool
-    let ranking: Int?
+    let showRanking: Bool
+    let isBestCategory: Bool
     let action: () -> Void
+
+    private var ranking: Int {
+        country.ranking(for: category)
+    }
 
     var body: some View {
         Button(action: action) {
-            HStack {
+            HStack(spacing: 12) {
                 Image(systemName: category.icon)
-                    .font(.system(size: 24))
-                    .frame(width: 40)
+                    .font(.system(size: 22))
+                    .frame(width: 38)
+
                 Text(category.rawValue)
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(.system(size: 17, weight: .semibold))
+                    .lineLimit(1)
+
                 Spacer()
-                if let ranking = ranking {
+
+                if isBestCategory && isDisabled {
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 14))
+                        .foregroundColor(.yellow)
+                }
+
+                if showRanking {
                     Text("#\(ranking)")
-                        .font(.system(size: 18, weight: .bold))
-                        .padding(.horizontal, 12)
+                        .font(.system(size: 17, weight: .bold))
+                        .padding(.horizontal, 11)
                         .padding(.vertical, 6)
                         .background(rankingColor(for: ranking))
                         .foregroundColor(.white)
-                        .cornerRadius(8)
+                        .cornerRadius(9)
                 }
             }
-            .padding()
+            .padding(.horizontal, 14)
+            .padding(.vertical, 14)
             .frame(maxWidth: .infinity)
             .background(backgroundColor)
             .foregroundColor(foregroundColor)
-            .cornerRadius(15)
+            .cornerRadius(14)
             .shadow(color: isSelected ? .blue.opacity(0.3) : .clear, radius: 8)
-            .scaleEffect(isSelected ? 1.05 : 1.0)
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(isBestCategory && isDisabled ? Color.yellow : Color.clear, lineWidth: 2)
+            )
+            .scaleEffect(isSelected ? 1.02 : 1.0)
         }
-        .disabled(isDisabled)
+        .disabled(isDisabled && !isSelected)
     }
 
     private var backgroundColor: Color {
         if isSelected {
             return Color.blue
         } else if isDisabled {
-            return Color.gray.opacity(0.2)
+            return Color.secondary.opacity(0.08)
         } else {
-            return Color.secondary.opacity(0.1)
+            return Color.secondary.opacity(0.12)
         }
     }
 
@@ -233,7 +297,7 @@ struct CategoryButton: View {
         if isSelected {
             return .white
         } else if isDisabled {
-            return .gray
+            return .secondary
         } else {
             return .primary
         }

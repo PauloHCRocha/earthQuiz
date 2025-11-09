@@ -15,6 +15,8 @@ class GameManager: ObservableObject {
     @Published var currentRoundIndex: Int = 0
     @Published var totalScore: Int = 0
     @Published var usedCountries: Set<String> = []
+    @Published var skipsRemaining: Int = 1
+    @Published var hasSkippedCurrentRound: Bool = false
 
     enum GameState {
         case notStarted
@@ -38,6 +40,8 @@ class GameManager: ObservableObject {
         currentRoundIndex = 0
         totalScore = 0
         usedCountries = []
+        skipsRemaining = 1
+        hasSkippedCurrentRound = false
 
         // Select 5 random categories
         selectedCategories = Category.allCases.shuffled().prefix(5).map { $0 }
@@ -109,8 +113,39 @@ class GameManager: ObservableObject {
         }
     }
 
+    func skipCurrentCountry() {
+        guard skipsRemaining > 0 && !hasSkippedCurrentRound else { return }
+        guard currentRoundIndex < rounds.count else { return }
+
+        skipsRemaining -= 1
+        hasSkippedCurrentRound = true
+
+        // Remove current country from used countries so it can appear again
+        let currentCountryId = rounds[currentRoundIndex].country.id
+        usedCountries.remove(currentCountryId)
+
+        // Select a new country
+        var country: Country
+        repeat {
+            country = CountryData.shared.randomCountry()
+        } while usedCountries.contains(country.id)
+
+        usedCountries.insert(country.id)
+
+        // Update current round with new country
+        let availableCategories = rounds[currentRoundIndex].availableCategories
+        rounds[currentRoundIndex] = GameRound(
+            roundNumber: currentRoundIndex + 1,
+            country: country,
+            availableCategories: availableCategories
+        )
+
+        HapticManager.shared.light()
+    }
+
     private func nextRound() {
         currentRoundIndex += 1
+        hasSkippedCurrentRound = false
 
         if currentRoundIndex < 5 {
             createNextRound()
@@ -148,5 +183,23 @@ class GameManager: ObservableObject {
         default:
             return "Continue praticando! 💪"
         }
+    }
+
+    func getOptimalScore() -> Int {
+        var optimalScore = 0
+        for round in rounds {
+            if let bestCategory = round.country.bestCategory(from: round.availableCategories) {
+                optimalScore += round.country.ranking(for: bestCategory)
+            }
+        }
+        return optimalScore
+    }
+
+    func getOptimalScoreForRound(_ round: GameRound) -> (category: Category, ranking: Int)? {
+        guard let bestCategory = round.country.bestCategory(from: round.availableCategories) else {
+            return nil
+        }
+        let ranking = round.country.ranking(for: bestCategory)
+        return (bestCategory, ranking)
     }
 }

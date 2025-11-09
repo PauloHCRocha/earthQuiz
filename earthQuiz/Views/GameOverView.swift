@@ -62,7 +62,7 @@ struct GameOverView: View {
                             )
                         )
 
-                    HStack(spacing: 20) {
+                    HStack(spacing: 14) {
                         VStack {
                             Text("Média")
                                 .font(.caption)
@@ -83,6 +83,38 @@ struct GameOverView: View {
                                 .font(.title2)
                                 .fontWeight(.bold)
                         }
+
+                        Divider()
+                            .frame(height: 40)
+
+                        VStack {
+                            Text("Melhor")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Text("\(gameManager.getOptimalScore())")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(.green)
+                        }
+                    }
+
+                    // Show performance comparison
+                    let optimal = gameManager.getOptimalScore()
+                    let difference = gameManager.totalScore - optimal
+                    if difference > 0 {
+                        Text("+\(difference) do ideal")
+                            .font(.caption)
+                            .foregroundColor(.orange)
+                            .padding(.top, 4)
+                    } else if difference == 0 {
+                        HStack(spacing: 4) {
+                            Image(systemName: "star.fill")
+                                .font(.caption2)
+                            Text("Pontuação Perfeita!")
+                                .font(.caption)
+                        }
+                        .foregroundColor(.yellow)
+                        .padding(.top, 4)
                     }
                 }
                 .padding(24)

@@ -18,6 +18,11 @@ enum Category: String, CaseIterable, Identifiable {
     case education = "Educação"
     case technology = "Tecnologia"
     case renewable = "Energia Renovável"
+    case happiness = "Felicidade"
+    case exports = "Exportações"
+    case olympics = "Medalhas Olímpicas"
+    case internet = "Internet"
+    case healthcare = "Saúde"
 
     var id: String { rawValue }
 
@@ -33,6 +38,11 @@ enum Category: String, CaseIterable, Identifiable {
         case .education: return "book.fill"
         case .technology: return "laptopcomputer"
         case .renewable: return "bolt.fill"
+        case .happiness: return "face.smiling.fill"
+        case .exports: return "shippingbox.fill"
+        case .olympics: return "medal.fill"
+        case .internet: return "wifi"
+        case .healthcare: return "cross.case.fill"
         }
     }
 
@@ -48,6 +58,11 @@ enum Category: String, CaseIterable, Identifiable {
         case .education: return "Ranking de qualidade educacional"
         case .technology: return "Ranking de inovação tecnológica"
         case .renewable: return "Ranking de energia renovável"
+        case .happiness: return "Ranking mundial de felicidade"
+        case .exports: return "Ranking de volume de exportações"
+        case .olympics: return "Ranking de medalhas olímpicas"
+        case .internet: return "Ranking de penetração de internet"
+        case .healthcare: return "Ranking de qualidade de saúde"
         }
     }
 }
