@@ -135,20 +135,21 @@ struct GameView: View {
                     .transition(.scale.combined(with: .opacity))
                 }
 
-                // Categories
+                // Categories - Show ALL categories
                 if showFinalFlag {
                     ScrollView {
                         VStack(spacing: 12) {
-                            ForEach(round.availableCategories) { category in
+                            ForEach(Category.allCases) { category in
                                 CategoryButton(
                                     category: category,
                                     country: round.country,
                                     isSelected: round.selectedCategory == category,
+                                    isAvailable: round.availableCategories.contains(category),
                                     isDisabled: round.isCompleted,
                                     showRanking: round.isCompleted || round.selectedCategory == category,
                                     isBestCategory: gameManager.getOptimalScoreForRound(round)?.category == category
                                 ) {
-                                    if !round.isCompleted {
+                                    if !round.isCompleted && round.availableCategories.contains(category) {
                                         HapticManager.shared.selection()
                                         withAnimation(.spring()) {
                                             gameManager.selectCategory(category)
@@ -229,6 +230,7 @@ struct CategoryButton: View {
     let category: Category
     let country: Country
     let isSelected: Bool
+    let isAvailable: Bool
     let isDisabled: Bool
     let showRanking: Bool
     let isBestCategory: Bool
@@ -241,9 +243,17 @@ struct CategoryButton: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                Image(systemName: category.icon)
-                    .font(.system(size: 22))
-                    .frame(width: 38)
+                // Show lock icon for unavailable categories
+                if !isAvailable {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 16))
+                        .foregroundColor(.secondary.opacity(0.5))
+                        .frame(width: 38)
+                } else {
+                    Image(systemName: category.icon)
+                        .font(.system(size: 22))
+                        .frame(width: 38)
+                }
 
                 Text(category.rawValue)
                     .font(.system(size: 17, weight: .semibold))
@@ -251,13 +261,15 @@ struct CategoryButton: View {
 
                 Spacer()
 
-                if isBestCategory && isDisabled {
+                // Show star for best category (only if it was available)
+                if isBestCategory && isDisabled && isAvailable {
                     Image(systemName: "star.fill")
                         .font(.system(size: 14))
                         .foregroundColor(.yellow)
                 }
 
-                if showRanking {
+                // Show ranking for selected category or if round is completed and category was available
+                if showRanking && isAvailable {
                     Text("#\(ranking)")
                         .font(.system(size: 17, weight: .bold))
                         .padding(.horizontal, 11)
@@ -276,16 +288,18 @@ struct CategoryButton: View {
             .shadow(color: isSelected ? .blue.opacity(0.3) : .clear, radius: 8)
             .overlay(
                 RoundedRectangle(cornerRadius: 14)
-                    .stroke(isBestCategory && isDisabled ? Color.yellow : Color.clear, lineWidth: 2)
+                    .stroke(isBestCategory && isDisabled && isAvailable ? Color.yellow : Color.clear, lineWidth: 2)
             )
             .scaleEffect(isSelected ? 1.02 : 1.0)
         }
-        .disabled(isDisabled && !isSelected)
+        .disabled(!isAvailable || (isDisabled && !isSelected))
     }
 
     private var backgroundColor: Color {
         if isSelected {
             return Color.blue
+        } else if !isAvailable {
+            return Color.secondary.opacity(0.05)
         } else if isDisabled {
             return Color.secondary.opacity(0.08)
         } else {
@@ -296,6 +310,8 @@ struct CategoryButton: View {
     private var foregroundColor: Color {
         if isSelected {
             return .white
+        } else if !isAvailable {
+            return .secondary.opacity(0.4)
         } else if isDisabled {
             return .secondary
         } else {
