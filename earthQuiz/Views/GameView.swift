@@ -17,152 +17,159 @@ struct GameView: View {
     @State private var showAllRankings = false
 
     var body: some View {
-        VStack(spacing: 16) {
-            // Header
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Round \(gameManager.currentRoundIndex + 1)/5")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
-                    Text("Pontuação: \(gameManager.totalScore)")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                }
-                Spacer()
+        VStack(spacing: 0) {
+            VStack(spacing: 16) {
+                // Header
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Round \(gameManager.currentRoundIndex + 1)/5")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        Text("Pontuação: \(gameManager.totalScore)")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                    }
+                    Spacer()
 
-                // Skip button
-                if gameManager.skipsRemaining > 0 && !gameManager.hasSkippedCurrentRound {
-                    Button(action: {
-                        withAnimation {
-                            gameManager.skipCurrentCountry()
+                    // Skip button
+                    if gameManager.skipsRemaining > 0 && !gameManager.hasSkippedCurrentRound {
+                        Button(action: {
+                            withAnimation {
+                                gameManager.skipCurrentCountry()
+                            }
+                        }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "forward.fill")
+                                    .font(.system(size: 14))
+                                Text("Skip")
+                                    .font(.system(size: 14, weight: .semibold))
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color.orange)
+                            .cornerRadius(10)
                         }
-                    }) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "forward.fill")
-                                .font(.system(size: 14))
-                            Text("Skip")
-                                .font(.system(size: 14, weight: .semibold))
-                        }
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(Color.orange)
-                        .cornerRadius(10)
                     }
                 }
-            }
-            .padding(.horizontal)
-            .padding(.top)
-
-            if let round = gameManager.currentRound {
-                // Country Display com animação
-                VStack(spacing: 12) {
-                    ZStack {
-                        // Slot machine animation
-                        if isAnimating && !animatingFlags.isEmpty {
-                            Text(animatingFlags[currentFlagIndex % animatingFlags.count])
-                                .font(.system(size: 95))
-                                .opacity(0.85)
-                                .id("flag-\(currentFlagIndex)")
-                                .transition(.asymmetric(
-                                    insertion: .move(edge: .trailing),
-                                    removal: .move(edge: .leading)
-                                ))
-                        }
-
-                        // Final flag
-                        if showFinalFlag {
-                            Text(round.country.flag)
-                                .font(.system(size: 100))
-                                .scaleEffect(showFinalFlag ? 1.0 : 0.3)
-                                .opacity(showFinalFlag ? 1.0 : 0)
-                                .rotationEffect(.degrees(showFinalFlag ? 0 : -180))
-                        }
-                    }
-                    .frame(height: 110)
-
-                    if showFinalFlag {
-                        Text(round.country.name)
-                            .font(.system(size: 30, weight: .bold))
-                            .transition(.opacity.combined(with: .move(edge: .bottom)))
-                    }
-                }
-                .padding(.vertical, 12)
-                .frame(maxWidth: .infinity)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.blue.opacity(0.1))
-                        .shadow(color: .blue.opacity(0.1), radius: 10, x: 0, y: 5)
-                )
                 .padding(.horizontal)
-                .onChange(of: gameManager.currentRoundIndex) { oldValue, newValue in
-                    if newValue != previousRoundIndex {
-                        showAllRankings = false
-                        startFlagAnimation()
-                        previousRoundIndex = newValue
-                    }
-                }
-                .onAppear {
-                    if previousRoundIndex == -1 {
-                        startFlagAnimation()
-                        previousRoundIndex = gameManager.currentRoundIndex
-                    }
-                }
+                .padding(.top)
 
-                // Question
-                if showFinalFlag && !round.isCompleted {
-                    Text("Qual categoria tem o melhor ranking?")
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                        .transition(.opacity)
-                }
-
-                // Show best category hint if round is completed
-                if round.isCompleted, let optimal = gameManager.getOptimalScoreForRound(round) {
-                    HStack {
-                        Image(systemName: "star.fill")
-                            .foregroundColor(.yellow)
-                        Text("Melhor: \(optimal.category.rawValue) (#\(optimal.ranking))")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.green)
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color.green.opacity(0.15))
-                    .cornerRadius(10)
-                    .transition(.scale.combined(with: .opacity))
-                }
-
-                // Categories - Always visible (even during animation)
-                ScrollView {
+                if let round = gameManager.currentRound {
+                    // Country Display com animação
                     VStack(spacing: 12) {
-                        ForEach(round.availableCategories) { category in
-                            CategoryButton(
-                                category: category,
-                                country: round.country,
-                                isSelected: round.selectedCategory == category,
-                                isAvailable: true,
-                                isDisabled: round.isCompleted || isAnimating,
-                                showRanking: round.selectedCategory == category,
-                                isBestCategory: round.isCompleted && gameManager.getOptimalScoreForRound(round)?.category == category
-                            ) {
-                                if !round.isCompleted && !isAnimating {
-                                    HapticManager.shared.selection()
-                                    withAnimation(.spring()) {
-                                        gameManager.selectCategory(category)
+                        ZStack {
+                            // Slot machine animation
+                            if isAnimating && !animatingFlags.isEmpty {
+                                Text(animatingFlags[currentFlagIndex % animatingFlags.count])
+                                    .font(.system(size: 95))
+                                    .opacity(0.85)
+                                    .id("flag-\(currentFlagIndex)")
+                                    .transition(.asymmetric(
+                                        insertion: .move(edge: .trailing),
+                                        removal: .move(edge: .leading)
+                                    ))
+                            }
+
+                            // Final flag
+                            if showFinalFlag {
+                                Text(round.country.flag)
+                                    .font(.system(size: 100))
+                                    .scaleEffect(showFinalFlag ? 1.0 : 0.3)
+                                    .opacity(showFinalFlag ? 1.0 : 0)
+                                    .rotationEffect(.degrees(showFinalFlag ? 0 : -180))
+                            }
+                        }
+                        .frame(height: 110)
+
+                        if showFinalFlag {
+                            Text(round.country.name)
+                                .font(.system(size: 30, weight: .bold))
+                                .transition(.opacity.combined(with: .move(edge: .bottom)))
+                        }
+                    }
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color.blue.opacity(0.1))
+                            .shadow(color: .blue.opacity(0.1), radius: 10, x: 0, y: 5)
+                    )
+                    .padding(.horizontal)
+                    .onChange(of: gameManager.currentRoundIndex) { oldValue, newValue in
+                        if newValue != previousRoundIndex {
+                            showAllRankings = false
+                            startFlagAnimation()
+                            previousRoundIndex = newValue
+                        }
+                    }
+                    .onAppear {
+                        if previousRoundIndex == -1 {
+                            startFlagAnimation()
+                            previousRoundIndex = gameManager.currentRoundIndex
+                        }
+                    }
+
+                    // Question
+                    if showFinalFlag && !round.isCompleted {
+                        Text("Qual categoria tem o melhor ranking?")
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                            .transition(.opacity)
+                    }
+
+                    // Show best category hint if round is completed
+                    if round.isCompleted, let optimal = gameManager.getOptimalScoreForRound(round) {
+                        HStack {
+                            Image(systemName: "star.fill")
+                                .foregroundColor(.yellow)
+                            Text("Melhor: \(optimal.category.rawValue) (#\(optimal.ranking))")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(.green)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Color.green.opacity(0.15))
+                        .cornerRadius(10)
+                        .transition(.scale.combined(with: .opacity))
+                    }
+
+                    // Categories - Always visible (even during animation)
+                    ScrollView {
+                        VStack(spacing: 12) {
+                            ForEach(round.availableCategories) { category in
+                                CategoryButton(
+                                    category: category,
+                                    country: round.country,
+                                    isSelected: round.selectedCategory == category,
+                                    isAvailable: true,
+                                    isDisabled: round.isCompleted || isAnimating,
+                                    showRanking: round.selectedCategory == category,
+                                    isBestCategory: round.isCompleted && gameManager.getOptimalScoreForRound(round)?.category == category
+                                ) {
+                                    if !round.isCompleted && !isAnimating {
+                                        HapticManager.shared.selection()
+                                        withAnimation(.spring()) {
+                                            gameManager.selectCategory(category)
+                                        }
                                     }
                                 }
                             }
                         }
+                        .padding(.horizontal)
                     }
-                    .padding(.horizontal)
-                }
-                .opacity(isAnimating ? 0.5 : 1.0)
+                    .opacity(isAnimating ? 0.5 : 1.0)
 
-                Spacer(minLength: 10)
+                    Spacer(minLength: 10)
+                }
             }
+
+            // AdMob Banner at bottom
+            BannerAdView()
+                .frame(height: 50)
+                .background(Color.secondary.opacity(0.1))
         }
     }
 

@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		8C3E77FF2EC020FE00C2D56F /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3E77FE2EC020FE00C2D56F /* HapticManager.swift */; };
 		A00000010000000000000001 /* earthQuizApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000020000000000000001 /* earthQuizApp.swift */; };
 		A00000030000000000000001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000040000000000000001 /* ContentView.swift */; };
 		A00000050000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A00000060000000000000001 /* Assets.xcassets */; };
@@ -20,10 +19,13 @@
 		A00000190000000000000001 /* StartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000200000000000000001 /* StartView.swift */; };
 		A00000210000000000000001 /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000220000000000000001 /* GameView.swift */; };
 		A00000230000000000000001 /* GameOverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000240000000000000001 /* GameOverView.swift */; };
+		E542970B2ED6756A0061FCC2 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = E542970A2ED6756A0061FCC2 /* GoogleMobileAds */; };
+		E542970F2ED677EA0061FCC2 /* AdMobManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E542970D2ED677EA0061FCC2 /* AdMobManager.swift */; };
+		E54297102ED677EA0061FCC2 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E542970E2ED677EA0061FCC2 /* HapticManager.swift */; };
+		E54297122ED678210061FCC2 /* BannerAdView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E54297112ED678210061FCC2 /* BannerAdView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		8C3E77FE2EC020FE00C2D56F /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
 		A00000020000000000000001 /* earthQuizApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = earthQuizApp.swift; sourceTree = "<group>"; };
 		A00000040000000000000001 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A00000060000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -37,6 +39,10 @@
 		A00000220000000000000001 /* GameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
 		A00000240000000000000001 /* GameOverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverView.swift; sourceTree = "<group>"; };
 		A00000250000000000000001 /* earthQuiz.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = earthQuiz.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E542970C2ED675920061FCC2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		E542970D2ED677EA0061FCC2 /* AdMobManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdMobManager.swift; sourceTree = "<group>"; };
+		E542970E2ED677EA0061FCC2 /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
+		E54297112ED678210061FCC2 /* BannerAdView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerAdView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -44,6 +50,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E542970B2ED6756A0061FCC2 /* GoogleMobileAds in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -61,6 +68,7 @@
 		A00000280000000000000001 /* earthQuiz */ = {
 			isa = PBXGroup;
 			children = (
+				E542970C2ED675920061FCC2 /* Info.plist */,
 				A00000020000000000000001 /* earthQuizApp.swift */,
 				A00000300000000000000001 /* Models */,
 				A00000310000000000000001 /* ViewModels */,
@@ -93,6 +101,8 @@
 		A00000310000000000000001 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				E542970D2ED677EA0061FCC2 /* AdMobManager.swift */,
+				E542970E2ED677EA0061FCC2 /* HapticManager.swift */,
 				A00000160000000000000001 /* GameManager.swift */,
 			);
 			path = ViewModels;
@@ -101,11 +111,11 @@
 		A00000320000000000000001 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				E54297112ED678210061FCC2 /* BannerAdView.swift */,
 				A00000040000000000000001 /* ContentView.swift */,
 				A00000200000000000000001 /* StartView.swift */,
 				A00000220000000000000001 /* GameView.swift */,
 				A00000240000000000000001 /* GameOverView.swift */,
-				8C3E77FE2EC020FE00C2D56F /* HapticManager.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -170,6 +180,9 @@
 				Base,
 			);
 			mainGroup = A00000270000000000000001;
+			packageReferences = (
+				E54297092ED6756A0061FCC2 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+			);
 			productRefGroup = A00000290000000000000001 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -199,13 +212,15 @@
 				A00000030000000000000001 /* ContentView.swift in Sources */,
 				A00000090000000000000001 /* Category.swift in Sources */,
 				A00000110000000000000001 /* Country.swift in Sources */,
+				E54297122ED678210061FCC2 /* BannerAdView.swift in Sources */,
 				A00000130000000000000001 /* GameRound.swift in Sources */,
 				A00000150000000000000001 /* GameManager.swift in Sources */,
 				A00000170000000000000001 /* CountryData.swift in Sources */,
 				A00000190000000000000001 /* StartView.swift in Sources */,
 				A00000210000000000000001 /* GameView.swift in Sources */,
 				A00000230000000000000001 /* GameOverView.swift in Sources */,
-				8C3E77FF2EC020FE00C2D56F /* HapticManager.swift in Sources */,
+				E542970F2ED677EA0061FCC2 /* AdMobManager.swift in Sources */,
+				E54297102ED677EA0061FCC2 /* HapticManager.swift in Sources */,
 				A00000010000000000000001 /* earthQuizApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -343,6 +358,7 @@
 				DEVELOPMENT_TEAM = A5BUCZ3K4T;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = earthQuiz/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -373,6 +389,7 @@
 				DEVELOPMENT_TEAM = A5BUCZ3K4T;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = earthQuiz/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -414,6 +431,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		E54297092ED6756A0061FCC2 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.14.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E542970A2ED6756A0061FCC2 /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E54297092ED6756A0061FCC2 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A00000390000000000000001 /* Project object */;
 }

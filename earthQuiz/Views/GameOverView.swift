@@ -14,8 +14,9 @@ struct GameOverView: View {
     @State private var showRounds = false
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(spacing: 20) {
                 // Trophy com animação
                 Text("🏆")
                     .font(.system(size: 100))
@@ -256,7 +257,13 @@ struct GameOverView: View {
                 }
                 .padding(.horizontal, 30)
                 .padding(.vertical, 20)
+                }
             }
+
+            // AdMob Banner at bottom
+            BannerAdView()
+                .frame(height: 50)
+                .background(Color.secondary.opacity(0.1))
         }
         .onAppear {
             HapticManager.shared.success()
