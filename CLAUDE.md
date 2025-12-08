@@ -26,12 +26,23 @@ xcodebuild clean -scheme earthQuiz -project earthQuiz.xcodeproj
 ### Run in Xcode
 Open `earthQuiz.xcodeproj` in Xcode and press `Cmd + R` to build and run on the selected simulator or device.
 
+## Dependencies
+
+The project uses Swift Package Manager (SPM) for dependency management:
+- **GoogleMobileAds** (12.14.0) - AdMob SDK for banner ads
+- **GoogleUserMessagingPlatform** (3.1.0) - User messaging for GDPR/privacy compliance
+
+Dependencies are resolved automatically by Xcode. If needed, resolve packages manually:
+```bash
+xcodebuild -resolvePackageDependencies -project earthQuiz.xcodeproj
+```
+
 ## Architecture
 
 ### MVVM Pattern
 - **Models**: `Country`, `Category`, `GameRound` - immutable data structures
-- **ViewModels**: `GameManager` - single source of truth for game state, uses `@Published` properties
-- **Views**: SwiftUI views that observe `GameManager` via `@ObservedObject`
+- **ViewModels**: `GameManager` (game state), `AdMobManager` (ads), `HapticManager` (haptics) - use `@Published` properties
+- **Views**: SwiftUI views that observe ViewModels via `@ObservedObject`
 
 ### Core Game Flow
 1. **Game Start**: `GameManager.startNewGame()` selects 5 random categories and creates first round
@@ -52,6 +63,8 @@ Open `earthQuiz.xcodeproj` in Xcode and press `Cmd + R` to build and run on the 
 - 50+: Warning haptic
 
 **Platform Guards**: `HapticManager` uses `#if canImport(UIKit)` to safely handle UIKit dependencies, allowing the code to compile on non-iOS platforms.
+
+**AdMob Integration**: `AdMobManager` is a singleton that initializes the Google Mobile Ads SDK at app launch. `BannerAdView` is a `UIViewRepresentable` wrapper that displays banner ads at the bottom of `GameView`. Currently uses Google's test ad unit ID (`ca-app-pub-3940256099942544/2934735716`) - replace with production ad unit ID before app store release.
 
 ### State Management
 `GameManager` is the single source of truth, using `@Published` properties:
@@ -74,11 +87,15 @@ ContentView (root)
 ├── StartView (gameState == .notStarted)
 ├── GameView (gameState == .playing)
 │   ├── Header (round, score, skip button)
-│   ├── Country display (flag + name with animations)
-│   └── Category grid (available categories)
+│   ├── Country display (flag + name with slot machine animation)
+│   ├── Category grid (available categories)
+│   └── BannerAdView (bottom banner ad)
 └── GameOverView (gameState == .finished)
     └── Results summary with optimal scores
 ```
+
+### Animations
+**Slot Machine Effect**: When a new round starts, `GameView` plays a slot machine animation showing random country flags before revealing the actual country. The animation uses variable-speed intervals to create deceleration effect, with haptic feedback at key moments. Implementation in `startFlagAnimation()` uses `DispatchQueue.asyncAfter` with cumulative timing for smooth transitions.
 
 ## Important Implementation Details
 
@@ -104,6 +121,14 @@ When a category is selected, the score is the country's ranking in that category
 ### Optimal Score Display
 `GameOverView` shows optimal score by retroactively calculating the best possible category choice for each round given the available categories at that time. This helps players understand how well they performed.
 
+### AdMob Configuration
+**Test Mode**: The app currently uses Google's test ad unit ID. To switch to production:
+1. Replace `adUnitID` in `BannerAdView.swift` with your production ad unit from AdMob console
+2. Ensure proper Info.plist configuration for AdMob App ID
+3. Test ads thoroughly before release
+
+**Initialization**: `AdMobManager.shared.initialize()` is called in `earthQuizApp.init()` to start the Mobile Ads SDK before any views load.
+
 ## Adding New Features
 
 ### Adding a New Category
@@ -122,8 +147,15 @@ Add new `Country` instance to `CountryData.shared.countries` array with rankings
 - Change delay before next round: Modify `deadline: .now() + 1.5` in `selectCategory()`
 
 ## File Locations
-- Models: `earthQuiz/Models/`
-- ViewModels: `earthQuiz/ViewModels/`
-- Views: `earthQuiz/Views/`
+- Models: `earthQuiz/Models/` (Category.swift, Country.swift, GameRound.swift)
+- ViewModels: `earthQuiz/ViewModels/` (GameManager.swift, AdMobManager.swift, HapticManager.swift)
+- Views: `earthQuiz/Views/` (ContentView.swift, StartView.swift, GameView.swift, GameOverView.swift, BannerAdView.swift)
 - Data: `earthQuiz/Data/CountryData.swift`
 - App entry: `earthQuiz/earthQuizApp.swift`
+
+## Troubleshooting
+
+### Build Issues
+- **Package resolution fails**: Run `xcodebuild -resolvePackageDependencies -project earthQuiz.xcodeproj`
+- **AdMob not loading**: Verify GoogleMobileAds package is properly resolved and `AdMobManager.shared.initialize()` is called in app init
+- **Simulator compatibility**: Use `-sdk iphonesimulator` flag when building for simulator

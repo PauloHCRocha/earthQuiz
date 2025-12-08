@@ -12,12 +12,18 @@ struct Country: Identifiable, Codable {
     let name: String
     let flag: String
     let rankings: [Category: Int]
+    let trivia: [Category: String]
 
-    init(id: String, name: String, flag: String, rankings: [Category: Int]) {
+    init(id: String, name: String, flag: String, rankings: [Category: Int], trivia: [Category: String] = [:]) {
         self.id = id
         self.name = name
         self.flag = flag
         self.rankings = rankings
+        self.trivia = trivia
+    }
+
+    func triviaText(for category: Category) -> String? {
+        return trivia[category]
     }
 
     func ranking(for category: Category) -> Int {
@@ -38,6 +44,7 @@ extension Country {
         case name
         case flag
         case rankings
+        case trivia
     }
 
     init(from decoder: Decoder) throws {
@@ -48,15 +55,23 @@ extension Country {
 
         // Decode rankings from a [String: Int] dictionary and map to [Category: Int]
         let rawRankings = try container.decode([String: Int].self, forKey: .rankings)
-        var mapped: [Category: Int] = [:]
+        var mappedRankings: [Category: Int] = [:]
         for (rawKey, value) in rawRankings {
             if let category = Category(rawValue: rawKey) {
-                mapped[category] = value
+                mappedRankings[category] = value
             }
-            // If a key doesn't map to a Category, we silently skip it.
-            // Alternatively, you could throw a decoding error if strictness is desired.
         }
-        rankings = mapped
+        rankings = mappedRankings
+
+        // Decode trivia from a [String: String] dictionary and map to [Category: String]
+        let rawTrivia = try container.decodeIfPresent([String: String].self, forKey: .trivia) ?? [:]
+        var mappedTrivia: [Category: String] = [:]
+        for (rawKey, value) in rawTrivia {
+            if let category = Category(rawValue: rawKey) {
+                mappedTrivia[category] = value
+            }
+        }
+        trivia = mappedTrivia
     }
 
     func encode(to encoder: Encoder) throws {
@@ -70,5 +85,11 @@ extension Country {
             (key.rawValue, value)
         })
         try container.encode(rawRankings, forKey: .rankings)
+
+        // Encode trivia as [String: String] using Category.rawValue
+        let rawTrivia = Dictionary(uniqueKeysWithValues: trivia.map { (key, value) in
+            (key.rawValue, value)
+        })
+        try container.encode(rawTrivia, forKey: .trivia)
     }
 }

@@ -48,21 +48,36 @@ enum Category: String, CaseIterable, Identifiable {
 
     var description: String {
         switch self {
-        case .population: return "Ranking de população mundial"
-        case .football: return "Ranking FIFA de futebol"
-        case .tourism: return "Ranking de turismo internacional"
-        case .gdp: return "Ranking de PIB per capita"
-        case .forest: return "Ranking de área florestal"
-        case .area: return "Ranking de área territorial"
-        case .lifeExpectancy: return "Ranking de expectativa de vida"
-        case .education: return "Ranking de qualidade educacional"
-        case .technology: return "Ranking de inovação tecnológica"
-        case .renewable: return "Ranking de energia renovável"
-        case .happiness: return "Ranking mundial de felicidade"
-        case .exports: return "Ranking de volume de exportações"
-        case .olympics: return "Ranking de medalhas olímpicas"
-        case .internet: return "Ranking de penetração de internet"
-        case .healthcare: return "Ranking de qualidade de saúde"
+        case .population:
+            return "Número total de habitantes do país"
+        case .football:
+            return "Ranking FIFA oficial de seleções nacionais"
+        case .tourism:
+            return "Número de chegadas de turistas internacionais por ano"
+        case .gdp:
+            return "PIB per capita (PPP) - riqueza média por habitante"
+        case .forest:
+            return "Área total de floresta em quilômetros quadrados"
+        case .area:
+            return "Tamanho territorial total do país"
+        case .lifeExpectancy:
+            return "Expectativa de vida média ao nascer"
+        case .education:
+            return "Qualidade do sistema educacional (PISA)"
+        case .technology:
+            return "Índice de Inovação Global (tecnologia e P&D)"
+        case .renewable:
+            return "Percentagem de energia renovável no consumo total"
+        case .happiness:
+            return "Índice de Felicidade Mundial (ONU)"
+        case .exports:
+            return "Volume total de exportações em dólares"
+        case .olympics:
+            return "Total de medalhas olímpicas conquistadas (histórico)"
+        case .internet:
+            return "Taxa de penetração de internet (% da população)"
+        case .healthcare:
+            return "Qualidade do sistema de saúde e acesso a cuidados"
         }
     }
 }

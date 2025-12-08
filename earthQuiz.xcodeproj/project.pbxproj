@@ -23,6 +23,12 @@
 		E542970F2ED677EA0061FCC2 /* AdMobManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E542970D2ED677EA0061FCC2 /* AdMobManager.swift */; };
 		E54297102ED677EA0061FCC2 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E542970E2ED677EA0061FCC2 /* HapticManager.swift */; };
 		E54297122ED678210061FCC2 /* BannerAdView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E54297112ED678210061FCC2 /* BannerAdView.swift */; };
+		E557CE202EE751FD00FFC564 /* SoundManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E557CE1F2EE751FD00FFC564 /* SoundManager.swift */; };
+		E557CE242EE7556F00FFC564 /* combo.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E557CE212EE7556F00FFC564 /* combo.mp3 */; };
+		E557CE252EE7556F00FFC564 /* outstanding.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E557CE222EE7556F00FFC564 /* outstanding.mp3 */; };
+		E557CE262EE7556F00FFC564 /* speed bonus.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E557CE232EE7556F00FFC564 /* speed bonus.mp3 */; };
+		E557CE282EE7579700FFC564 /* theme song loop.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E557CE272EE7579700FFC564 /* theme song loop.mp3 */; };
+		E56A4E612EDCED7A0010FA24 /* EarthQuiz.icon in Resources */ = {isa = PBXBuildFile; fileRef = E56A4E602EDCED7A0010FA24 /* EarthQuiz.icon */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,6 +49,12 @@
 		E542970D2ED677EA0061FCC2 /* AdMobManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdMobManager.swift; sourceTree = "<group>"; };
 		E542970E2ED677EA0061FCC2 /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
 		E54297112ED678210061FCC2 /* BannerAdView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerAdView.swift; sourceTree = "<group>"; };
+		E557CE1F2EE751FD00FFC564 /* SoundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundManager.swift; sourceTree = "<group>"; };
+		E557CE212EE7556F00FFC564 /* combo.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = combo.mp3; sourceTree = "<group>"; };
+		E557CE222EE7556F00FFC564 /* outstanding.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = outstanding.mp3; sourceTree = "<group>"; };
+		E557CE232EE7556F00FFC564 /* speed bonus.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "speed bonus.mp3"; sourceTree = "<group>"; };
+		E557CE272EE7579700FFC564 /* theme song loop.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "theme song loop.mp3"; sourceTree = "<group>"; };
+		E56A4E602EDCED7A0010FA24 /* EarthQuiz.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = EarthQuiz.icon; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,6 +87,11 @@
 				A00000320000000000000001 /* Views */,
 				A00000330000000000000001 /* Data */,
 				A00000060000000000000001 /* Assets.xcassets */,
+				E557CE272EE7579700FFC564 /* theme song loop.mp3 */,
+				E557CE212EE7556F00FFC564 /* combo.mp3 */,
+				E557CE222EE7556F00FFC564 /* outstanding.mp3 */,
+				E557CE232EE7556F00FFC564 /* speed bonus.mp3 */,
+				E56A4E602EDCED7A0010FA24 /* EarthQuiz.icon */,
 				A00000340000000000000001 /* Preview Content */,
 			);
 			path = earthQuiz;
@@ -101,6 +118,7 @@
 		A00000310000000000000001 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				E557CE1F2EE751FD00FFC564 /* SoundManager.swift */,
 				E542970D2ED677EA0061FCC2 /* AdMobManager.swift */,
 				E542970E2ED677EA0061FCC2 /* HapticManager.swift */,
 				A00000160000000000000001 /* GameManager.swift */,
@@ -198,6 +216,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				A00000070000000000000001 /* Preview Assets.xcassets in Resources */,
+				E557CE282EE7579700FFC564 /* theme song loop.mp3 in Resources */,
+				E557CE242EE7556F00FFC564 /* combo.mp3 in Resources */,
+				E557CE252EE7556F00FFC564 /* outstanding.mp3 in Resources */,
+				E557CE262EE7556F00FFC564 /* speed bonus.mp3 in Resources */,
+				E56A4E612EDCED7A0010FA24 /* EarthQuiz.icon in Resources */,
 				A00000050000000000000001 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -214,6 +237,7 @@
 				A00000110000000000000001 /* Country.swift in Sources */,
 				E54297122ED678210061FCC2 /* BannerAdView.swift in Sources */,
 				A00000130000000000000001 /* GameRound.swift in Sources */,
+				E557CE202EE751FD00FFC564 /* SoundManager.swift in Sources */,
 				A00000150000000000000001 /* GameManager.swift in Sources */,
 				A00000170000000000000001 /* CountryData.swift in Sources */,
 				A00000190000000000000001 /* StartView.swift in Sources */,
@@ -350,8 +374,9 @@
 		A00000430000000000000001 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = EarthQuiz;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"earthQuiz/Preview Content\"";
@@ -381,8 +406,9 @@
 		A00000440000000000000001 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = EarthQuiz;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"earthQuiz/Preview Content\"";
