@@ -67,6 +67,11 @@ struct GameView: View {
     @State private var showExtraRoundBanner: Bool = false
     @State private var previousHasEarnedExtraRound: Bool = false
 
+    // Multiplier indicator animation
+    @State private var displayedMultiplier: Double = 1.0
+    @State private var multiplierScale: CGFloat = 1.0
+    @State private var previousMultiplier: Double = 1.0
+
     var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -139,6 +144,8 @@ struct GameView: View {
                     previousRoundIndex = -1
                     showFinalFlag = false
                     isAnimating = false
+                    currentFlagIndex = 0
+                    animatingFlags = []
                     roundContentOpacity = 1.0
                     roundContentOffset = 0
                     showModeChangeBanner = false
@@ -148,11 +155,49 @@ struct GameView: View {
                     previousStreak = 0
                     previousHasEarnedExtraRound = false
 
+                    // Reset multiplier display
+                    displayedMultiplier = 1.0
+                    previousMultiplier = 1.0
+                    multiplierScale = 1.0
+
                     // Start theme song
                     SoundManager.shared.playThemeSong()
+
+                    // Trigger flag animation for new game
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        previousRoundIndex = 0
+                        startFlagAnimation()
+                    }
                 } else if newState == .finished || newState == .notStarted {
                     // Stop theme song when game ends or returns to menu
                     SoundManager.shared.stopThemeSong()
+                }
+            }
+            .onChange(of: gameManager.streakMultiplier) { oldValue, newValue in
+                // Animate multiplier changes
+                let currentSessionId = gameManager.gameSessionId
+                let increased = newValue > previousMultiplier
+                previousMultiplier = newValue
+
+                // Pop animation
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
+                    multiplierScale = increased ? 1.4 : 0.8
+                }
+
+                // Update value with slight delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    guard gameManager.gameSessionId == currentSessionId else { return }
+                    withAnimation(.spring(response: 0.2, dampingFraction: 0.6)) {
+                        displayedMultiplier = newValue
+                    }
+                }
+
+                // Return to normal scale
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    guard gameManager.gameSessionId == currentSessionId else { return }
+                    withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
+                        multiplierScale = 1.0
+                    }
                 }
             }
             .onChange(of: gameManager.hasEarnedExtraRound) { oldValue, newValue in
@@ -272,15 +317,15 @@ struct GameView: View {
 
                 Spacer()
 
-                VStack(alignment: .center, spacing: 1) {
+                VStack(alignment: .center, spacing: 2) {
                     Text("Ronda \(gameManager.currentRoundIndex + 1)/\(gameManager.totalRounds)")
-                        .font(.system(size: isSmallScreen ? 13 : 14))
+                        .font(.system(size: isSmallScreen ? 12 : 13))
                         .foregroundColor(.secondary)
                     HStack(spacing: 4) {
                         Text("Pontuação:")
-                            .font(.system(size: isSmallScreen ? 18 : 20, weight: .bold))
+                            .font(.system(size: isSmallScreen ? 16 : 18, weight: .bold))
                         Text("\(displayedScore)")
-                            .font(.system(size: isSmallScreen ? 18 : 20, weight: .bold))
+                            .font(.system(size: isSmallScreen ? 16 : 18, weight: .bold))
                             .foregroundColor(.blue)
                             .scaleEffect(scoreScale)
                             .fixedSize(horizontal: true, vertical: false)
@@ -292,6 +337,13 @@ struct GameView: View {
                             )
                     }
                     .fixedSize(horizontal: true, vertical: false)
+
+                    // Multiplier indicator
+                    MultiplierIndicatorView(
+                        multiplier: displayedMultiplier,
+                        scale: multiplierScale,
+                        isSmallScreen: isSmallScreen
+                    )
                 }
 
                 Spacer()
@@ -1497,6 +1549,45 @@ struct ExtraRoundBannerView: View {
                 glowOpacity = 0.6
             }
         }
+    }
+}
+
+struct MultiplierIndicatorView: View {
+    let multiplier: Double
+    let scale: CGFloat
+    let isSmallScreen: Bool
+
+    private var multiplierColor: Color {
+        switch multiplier {
+        case 2.0...: return .purple
+        case 1.8..<2.0: return .pink
+        case 1.5..<1.8: return .red
+        case 1.2..<1.5: return .orange
+        default: return .gray
+        }
+    }
+
+    private var isActive: Bool {
+        multiplier > 1.0
+    }
+
+    var body: some View {
+        HStack(spacing: 3) {
+            if isActive {
+                Image(systemName: "flame.fill")
+                    .font(.system(size: isSmallScreen ? 9 : 10))
+            }
+            Text(String(format: "%.1fx", multiplier))
+                .font(.system(size: isSmallScreen ? 11 : 12, weight: .bold))
+        }
+        .foregroundColor(isActive ? .white : .secondary)
+        .padding(.horizontal, isSmallScreen ? 6 : 8)
+        .padding(.vertical, isSmallScreen ? 2 : 3)
+        .background(
+            Capsule()
+                .fill(isActive ? multiplierColor : Color.secondary.opacity(0.2))
+        )
+        .scaleEffect(scale)
     }
 }
 

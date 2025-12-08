@@ -13,198 +13,173 @@ struct GameOverView: View {
     @State private var showScore = false
     @State private var showRounds = false
 
+    // Excellence bonus animation
+    @State private var displayedScore: Int = 0
+    @State private var showExcellenceBonus = false
+    @State private var excellenceBonusScale: CGFloat = 0.3
+    @State private var excellenceBonusAdded = false
+    @State private var scoreScale: CGFloat = 1.0
+
     var body: some View {
+        let titleData = gameManager.getAccuracyTitle()
+
         VStack(spacing: 0) {
             ScrollView {
-                VStack(spacing: 20) {
-                // Trophy com animação
-                Text("🏆")
-                    .font(.system(size: 100))
-                    .scaleEffect(showTrophy ? 1.0 : 0.1)
-                    .rotationEffect(.degrees(showTrophy ? 0 : 180))
-                    .animation(.spring(response: 0.6, dampingFraction: 0.5), value: showTrophy)
-                    .padding(.top, 20)
-
-                // Title
-                Text("Jogo Terminado!")
-                    .font(.system(size: 38, weight: .bold))
-                    .opacity(showTrophy ? 1 : 0)
-                    .animation(.easeIn(duration: 0.3).delay(0.3), value: showTrophy)
-
-                // Rating com gradiente
-                Text(gameManager.getScoreRating())
-                    .font(.system(size: 26, weight: .bold))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [.blue, .purple],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .opacity(showTrophy ? 1 : 0)
-                    .animation(.easeIn(duration: 0.3).delay(0.5), value: showTrophy)
-                    .padding(.bottom, 10)
-
-                // Total Score com card melhorado
-                VStack(spacing: 12) {
-                    Text("Pontuação Total")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
-                        .textCase(.uppercase)
-                        .tracking(1.2)
-
-                    Text("\(gameManager.totalScore)")
-                        .font(.system(size: 72, weight: .bold))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: scoreGradientColors,
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
+                VStack(spacing: 16) {
+                    // Arcade-style header
+                    VStack(spacing: 8) {
+                        // GAME OVER text with arcade style
+                        Text("GAME OVER")
+                            .font(.system(size: 32, weight: .black, design: .rounded))
+                            .tracking(4)
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [.purple, .pink, .orange],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
                             )
-                        )
+                            .shadow(color: .purple.opacity(0.5), radius: 10, x: 0, y: 0)
+                            .scaleEffect(showTrophy ? 1.0 : 0.5)
+                            .opacity(showTrophy ? 1 : 0)
+                            .animation(.spring(response: 0.5, dampingFraction: 0.6), value: showTrophy)
 
-                    // Progress bar showing percentage of max score
-                    VStack(spacing: 4) {
-                        GeometryReader { geo in
-                            ZStack(alignment: .leading) {
-                                RoundedRectangle(cornerRadius: 4)
-                                    .fill(Color.secondary.opacity(0.2))
-                                    .frame(height: 8)
-
-                                RoundedRectangle(cornerRadius: 4)
-                                    .fill(
-                                        LinearGradient(
-                                            colors: scoreGradientColors,
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
+                        // Title badge with emoji
+                        HStack(spacing: 8) {
+                            Text(titleData.emoji)
+                                .font(.system(size: 28))
+                            Text(titleData.title)
+                                .font(.system(size: 22, weight: .black))
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: titleGradientColors,
+                                        startPoint: .leading,
+                                        endPoint: .trailing
                                     )
-                                    .frame(width: geo.size.width * min(gameManager.getScorePercentage() / 100, 1.0), height: 8)
+                                )
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .background(
+                            Capsule()
+                                .fill(Color.secondary.opacity(0.1))
+                                .overlay(
+                                    Capsule()
+                                        .stroke(
+                                            LinearGradient(
+                                                colors: titleGradientColors,
+                                                startPoint: .leading,
+                                                endPoint: .trailing
+                                            ),
+                                            lineWidth: 2
+                                        )
+                                )
+                        )
+                        .scaleEffect(showTrophy ? 1.0 : 0.3)
+                        .opacity(showTrophy ? 1 : 0)
+                        .animation(.spring(response: 0.5, dampingFraction: 0.6).delay(0.2), value: showTrophy)
+                    }
+                    .padding(.top, 16)
+
+                    // Score card - more compact
+                    VStack(spacing: 10) {
+                        // Main score
+                        VStack(spacing: 2) {
+                            Text("\(displayedScore)")
+                                .font(.system(size: 56, weight: .black, design: .rounded))
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: scoreGradientColors,
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .scaleEffect(scoreScale)
+                                .contentTransition(.numericText())
+
+                            Text("PONTOS")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(.secondary)
+                                .tracking(2)
+                        }
+
+                        // Stats row - horizontal compact
+                        HStack(spacing: 16) {
+                            // Average
+                            StatBadge(
+                                icon: "chart.bar.fill",
+                                label: "Média",
+                                value: "\(displayedScore / max(gameManager.totalRounds, 1))",
+                                color: .blue
+                            )
+
+                            // Best Streak
+                            if gameManager.bestStreak > 0 {
+                                StatBadge(
+                                    icon: "flame.fill",
+                                    label: "Streak",
+                                    value: "\(gameManager.bestStreak)x",
+                                    color: .orange
+                                )
+                            }
+
+                            // Perfects count
+                            if gameManager.totalPerfectScores > 0 {
+                                StatBadge(
+                                    icon: "star.fill",
+                                    label: "Perfeitos",
+                                    value: "\(gameManager.totalPerfectScores)",
+                                    color: .yellow
+                                )
                             }
                         }
-                        .frame(height: 8)
 
-                        Text("\(Int(gameManager.getScorePercentage()))% do máximo")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(.horizontal, 20)
+                        // Bonus badges row
+                        if gameManager.hasEarnedExtraRound || (gameManager.mysteryBonus > 0 && showExcellenceBonus) {
+                            HStack(spacing: 8) {
+                                if gameManager.hasEarnedExtraRound {
+                                    BonusBadge(
+                                        icon: "plus.circle.fill",
+                                        text: "Ronda Extra",
+                                        colors: [.purple, .pink]
+                                    )
+                                }
 
-                    HStack(spacing: 14) {
-                        VStack {
-                            Text("Média")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            Text("\(gameManager.totalScore / gameManager.totalRounds)")
-                                .font(.title2)
-                                .fontWeight(.bold)
-                        }
-
-                        Divider()
-                            .frame(height: 40)
-
-                        VStack {
-                            Text("Máximo")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            Text("\(gameManager.getMaxPossibleScore())")
-                                .font(.title2)
-                                .fontWeight(.bold)
-                                .foregroundColor(.green)
-                        }
-
-                        if gameManager.bestStreak > 0 {
-                            Divider()
-                                .frame(height: 40)
-
-                            VStack {
-                                Text("Streak")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                HStack(spacing: 2) {
-                                    Image(systemName: "flame.fill")
-                                        .font(.caption)
-                                        .foregroundColor(.orange)
-                                    Text("\(gameManager.bestStreak)")
-                                        .font(.title2)
-                                        .fontWeight(.bold)
-                                        .foregroundColor(.orange)
+                                if gameManager.mysteryBonus > 0 && showExcellenceBonus {
+                                    BonusBadge(
+                                        icon: "sparkles",
+                                        text: excellenceBonusAdded ? "+\(gameManager.mysteryBonus) Adicionado" : "+\(gameManager.mysteryBonus)",
+                                        colors: [.yellow, .orange]
+                                    )
+                                    .scaleEffect(excellenceBonusScale)
                                 }
                             }
                         }
                     }
+                    .padding(.vertical, 16)
+                    .padding(.horizontal, 20)
+                    .frame(maxWidth: .infinity)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color.secondary.opacity(0.08))
+                    )
+                    .padding(.horizontal, 16)
+                    .scaleEffect(showScore ? 1.0 : 0.8)
+                    .opacity(showScore ? 1 : 0)
+                    .animation(.spring(response: 0.5, dampingFraction: 0.7).delay(0.4), value: showScore)
 
-                    // Extra round earned indicator
-                    if gameManager.hasEarnedExtraRound {
-                        HStack(spacing: 6) {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.system(size: 14))
-                            Text("Ronda Extra Desbloqueada!")
-                                .font(.system(size: 13, weight: .semibold))
-                        }
-                        .foregroundColor(.purple)
-                        .padding(.top, 4)
-                    }
-
-                    // Mystery bonus indicator
-                    if gameManager.mysteryBonus > 0 {
-                        HStack(spacing: 6) {
-                            Image(systemName: "sparkles")
-                                .font(.system(size: 14))
-                            Text("Bónus Excelência: +\(gameManager.mysteryBonus)")
-                                .font(.system(size: 13, weight: .bold))
-                        }
-                        .foregroundColor(.yellow)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(
-                            Capsule()
-                                .fill(Color.yellow.opacity(0.2))
-                        )
-                        .padding(.top, 4)
-                    }
-
-                    // Show performance indicator
-                    let percentage = gameManager.getScorePercentage()
-                    if percentage >= 100 {
-                        HStack(spacing: 4) {
-                            Image(systemName: "star.fill")
-                                .font(.caption2)
-                            Text("Pontuação Perfeita!")
-                                .font(.caption)
-                        }
-                        .foregroundColor(.yellow)
-                        .padding(.top, 4)
-                    } else if percentage >= 90 {
-                        Text("Quase perfeito!")
-                            .font(.caption)
-                            .foregroundColor(.green)
-                            .padding(.top, 4)
-                    }
-                }
-                .padding(24)
-                .frame(maxWidth: .infinity)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.secondary.opacity(0.08))
-                        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
-                )
-                .padding(.horizontal, 20)
-                .scaleEffect(showScore ? 1.0 : 0.8)
-                .opacity(showScore ? 1 : 0)
-                .animation(.spring(response: 0.5, dampingFraction: 0.7).delay(0.7), value: showScore)
-
-                // Rounds Summary melhorado
-                VStack(alignment: .leading, spacing: 16) {
+                // Rounds Summary - compact header
+                VStack(alignment: .leading, spacing: 12) {
                     HStack {
-                        Text("Resumo das Rodadas")
-                            .font(.title3)
-                            .fontWeight(.bold)
-                        Spacer()
-                        Image(systemName: "flag.fill")
+                        Image(systemName: "list.bullet.clipboard.fill")
                             .foregroundColor(.blue)
+                        Text("Resumo")
+                            .font(.system(size: 16, weight: .bold))
+                        Spacer()
+                        Text("\(gameManager.totalRounds) rondas")
+                            .font(.system(size: 13))
+                            .foregroundColor(.secondary)
                     }
-                    .padding(.bottom, 4)
 
                     ForEach(Array(gameManager.rounds.enumerated()), id: \.element.id) { index, round in
                         RoundSummaryRow(
@@ -216,40 +191,40 @@ struct GameOverView: View {
                         )
                     }
                 }
-                .padding(20)
+                .padding(16)
                 .background(
-                    RoundedRectangle(cornerRadius: 20)
+                    RoundedRectangle(cornerRadius: 16)
                         .fill(Color.secondary.opacity(0.08))
                 )
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
+                .padding(.horizontal, 16)
 
-                // Buttons melhorados
-                VStack(spacing: 12) {
+                // Arcade-style buttons
+                HStack(spacing: 12) {
                     Button(action: {
                         HapticManager.shared.medium()
                         withAnimation {
                             gameManager.startNewGame()
                         }
                     }) {
-                        HStack {
-                            Image(systemName: "arrow.clockwise")
-                                .font(.system(size: 18, weight: .semibold))
-                            Text("Jogar Novamente")
-                                .font(.system(size: 18, weight: .semibold))
+                        HStack(spacing: 6) {
+                            Image(systemName: "play.fill")
+                                .font(.system(size: 14, weight: .bold))
+                            Text("JOGAR")
+                                .font(.system(size: 14, weight: .black))
+                                .tracking(1)
                         }
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
+                        .padding(.vertical, 14)
                         .background(
                             LinearGradient(
-                                gradient: Gradient(colors: [Color.blue, Color.purple]),
+                                colors: [.green, .mint],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
                         )
-                        .cornerRadius(16)
-                        .shadow(color: .blue.opacity(0.3), radius: 8, x: 0, y: 4)
+                        .cornerRadius(12)
+                        .shadow(color: .green.opacity(0.4), radius: 6, x: 0, y: 3)
                     }
 
                     Button(action: {
@@ -258,21 +233,22 @@ struct GameOverView: View {
                             gameManager.resetGame()
                         }
                     }) {
-                        HStack {
+                        HStack(spacing: 6) {
                             Image(systemName: "house.fill")
-                                .font(.system(size: 16, weight: .medium))
-                            Text("Menu Principal")
-                                .font(.system(size: 16, weight: .medium))
+                                .font(.system(size: 14, weight: .medium))
+                            Text("MENU")
+                                .font(.system(size: 14, weight: .bold))
+                                .tracking(1)
                         }
-                        .foregroundColor(.blue)
+                        .foregroundColor(.primary)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
-                        .background(Color.secondary.opacity(0.1))
-                        .cornerRadius(16)
+                        .background(Color.secondary.opacity(0.15))
+                        .cornerRadius(12)
                     }
                 }
-                .padding(.horizontal, 30)
-                .padding(.vertical, 20)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 16)
                 }
             }
 
@@ -282,6 +258,10 @@ struct GameOverView: View {
                 .background(Color.secondary.opacity(0.1))
         }
         .onAppear {
+            // Calculate score without excellence bonus for initial display
+            let scoreWithoutBonus = gameManager.totalScore - gameManager.mysteryBonus
+            displayedScore = scoreWithoutBonus
+
             HapticManager.shared.success()
             withAnimation {
                 showTrophy = true
@@ -291,6 +271,56 @@ struct GameOverView: View {
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 showRounds = true
+            }
+
+            // Excellence bonus animation sequence
+            if gameManager.mysteryBonus > 0 {
+                // Show the excellence bonus badge
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
+                        showExcellenceBonus = true
+                        excellenceBonusScale = 1.0
+                    }
+                    HapticManager.shared.heavy()
+                }
+
+                // Add bonus to score with animation
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
+                        excellenceBonusAdded = true
+                        scoreScale = 1.15
+                    }
+
+                    // Animate score counting up
+                    animateScoreAddition(from: scoreWithoutBonus, adding: gameManager.mysteryBonus)
+
+                    HapticManager.shared.success()
+
+                    // Return score to normal scale
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                            scoreScale = 1.0
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func animateScoreAddition(from startValue: Int, adding bonus: Int) {
+        let endValue = startValue + bonus
+        let duration: Double = 0.8
+        let steps = 20
+        let stepDuration = duration / Double(steps)
+
+        for i in 0...steps {
+            DispatchQueue.main.asyncAfter(deadline: .now() + (stepDuration * Double(i))) {
+                let progress = Double(i) / Double(steps)
+                // Ease out curve for more dramatic finish
+                let easedProgress = 1 - pow(1 - progress, 3)
+                withAnimation(.linear(duration: stepDuration)) {
+                    displayedScore = startValue + Int(Double(bonus) * easedProgress)
+                }
             }
         }
     }
@@ -309,11 +339,34 @@ struct GameOverView: View {
         }
     }
 
+    private var titleGradientColors: [Color] {
+        let perfects = gameManager.totalPerfectScores
+        let goodOrBetter = perfects + gameManager.totalGreatScores
+
+        // Atlas Humano (all perfect)
+        if perfects >= gameManager.totalRounds {
+            return [.yellow, .orange]
+        }
+        // Mestre Geográfico (4+ perfects)
+        else if perfects >= 4 {
+            return [.green, .mint]
+        }
+        // Viajante Experiente (3+ good)
+        else if goodOrBetter >= 3 {
+            return [.blue, .cyan]
+        }
+        // Turista
+        else {
+            return [.purple, .pink]
+        }
+    }
+
     private func scoreColor(for score: Int) -> Color {
-        // Score is now arcade style (higher is better)
+        // Score is arcade style (higher is better)
+        // With multipliers and speed bonus, scores can exceed 1000
         switch score {
-        case 1000:
-            return .green
+        case 1000...:
+            return .green  // Perfect score or better (with bonuses)
         case 750..<1000:
             return .blue
         case 500..<750:
@@ -577,6 +630,65 @@ struct RoundSummaryRow: View {
         RoundedRectangle(cornerRadius: 12)
             .fill(Color.secondary.opacity(0.05))
             .shadow(color: .black.opacity(0.03), radius: 3, x: 0, y: 2)
+    }
+}
+
+// MARK: - Compact Stat Badge
+struct StatBadge: View {
+    let icon: String
+    let label: String
+    let value: String
+    let color: Color
+
+    var body: some View {
+        VStack(spacing: 4) {
+            HStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 12))
+                    .foregroundColor(color)
+                Text(value)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(color)
+            }
+            Text(label)
+                .font(.system(size: 10, weight: .medium))
+                .foregroundColor(.secondary)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(color.opacity(0.1))
+        )
+    }
+}
+
+// MARK: - Bonus Badge
+struct BonusBadge: View {
+    let icon: String
+    let text: String
+    let colors: [Color]
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.system(size: 11))
+            Text(text)
+                .font(.system(size: 11, weight: .bold))
+        }
+        .foregroundColor(.white)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(
+            Capsule()
+                .fill(
+                    LinearGradient(
+                        colors: colors,
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+        )
     }
 }
 

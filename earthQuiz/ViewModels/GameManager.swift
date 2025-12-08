@@ -404,9 +404,39 @@ class GameManager: ObservableObject {
         return perfectCount == totalRounds ? Self.mysteryBonusPoints : 0
     }
 
-    /// Count total perfect scores in the game
+    /// Count total perfect scores in the game (Tier S - Acertos Críticos)
     var totalPerfectScores: Int {
-        return rounds.filter { $0.roundScore?.baseScore == Self.maxPointsPerRound }.count
+        return rounds.filter { $0.roundScore?.tier == .perfect }.count
+    }
+
+    /// Count total great scores in the game (Tier A - Acertos Excelentes)
+    var totalGreatScores: Int {
+        return rounds.filter { $0.roundScore?.tier == .great }.count
+    }
+
+    /// Get accuracy-based title (independent of time/bonuses)
+    /// Based only on perfect (S) and great (A) tier achievements
+    func getAccuracyTitle() -> (title: String, emoji: String, description: String) {
+        let perfects = totalPerfectScores
+        let greats = totalGreatScores
+        let goodOrBetter = perfects + greats
+
+        // 5+ Acertos Críticos (all perfect): "Atlas Humano"
+        if perfects >= totalRounds {
+            return ("Atlas Humano", "🌍", "Conhecimento geográfico perfeito!")
+        }
+        // 4 Acertos Críticos: "Mestre Geográfico"
+        else if perfects >= 4 {
+            return ("Mestre Geográfico", "🎓", "Domínio quase perfeito!")
+        }
+        // 3+ Acertos Excelentes (S ou A): "Viajante Experiente"
+        else if goodOrBetter >= 3 {
+            return ("Viajante Experiente", "✈️", "Conhece bem o mundo!")
+        }
+        // Menos de 3 bons acertos: "Turista"
+        else {
+            return ("Turista", "🧳", "Continue a explorar o mundo!")
+        }
     }
 
     func resetGame() {
