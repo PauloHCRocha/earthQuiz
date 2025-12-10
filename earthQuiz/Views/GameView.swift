@@ -74,8 +74,9 @@ struct GameView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            ZStack {
+            ZStack(alignment: .top) {
                 adaptiveContent(geometry: geometry)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
 
                 // Flying score overlay
                 if showFlyingScore {
@@ -90,33 +91,37 @@ struct GameView: View {
                     )
                 }
 
-                // Mode change banner overlay
+                // Mode change banner overlay - centered
                 if showModeChangeBanner {
                     ModeChangeBannerView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .transition(.opacity.combined(with: .scale(scale: 0.8)))
                 }
 
-                // Streak banner overlay
+                // Streak banner overlay - centered
                 if showStreakBanner {
                     StreakBannerView(streak: streakCount, multiplier: streakMultiplier)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .transition(.asymmetric(
                             insertion: .scale(scale: 0.5).combined(with: .opacity),
                             removal: .opacity
                         ))
                 }
 
-                // Speed bonus banner overlay
+                // Speed bonus banner overlay - centered
                 if showSpeedBonusBanner {
                     SpeedBonusBannerView(bonus: speedBonusValue)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .transition(.asymmetric(
                             insertion: .scale(scale: 0.5).combined(with: .opacity),
                             removal: .opacity
                         ))
                 }
 
-                // Extra round banner overlay
+                // Extra round banner overlay - centered
                 if showExtraRoundBanner {
                     ExtraRoundBannerView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .transition(.asymmetric(
                             insertion: .scale(scale: 0.5).combined(with: .opacity),
                             removal: .opacity
@@ -285,50 +290,58 @@ struct GameView: View {
 
     private func adaptiveContent(geometry: GeometryProxy) -> some View {
         let screenHeight = geometry.size.height
-        let isSmallScreen = screenHeight < 750 // iPhone mini, SE
+        let isSmallScreen = screenHeight < 750 // iPhone 13 mini, SE
         let isMediumScreen = screenHeight < 850 // iPhone standard
 
-        // Adaptive sizing - usando múltiplos de 8
-        let flagSize: CGFloat = isSmallScreen ? 72 : (isMediumScreen ? 80 : 96)
-        let categoryIconSize: CGFloat = 48
-        let titleFontSize: CGFloat = isSmallScreen ? 24 : (isMediumScreen ? 26 : 28)
-        let categorySpacing: CGFloat = isSmallScreen ? 12 : 16
+        // Adaptive sizing - optimizado para caber sem scroll mas legível
+        let flagSize: CGFloat = isSmallScreen ? 56 : (isMediumScreen ? 64 : 72)
+        let titleFontSize: CGFloat = isSmallScreen ? 20 : (isMediumScreen ? 22 : 24)
+        let optionSpacing: CGFloat = isSmallScreen ? 6 : 8
 
         return VStack(spacing: 0) {
-            // Fixed Header - outside ScrollView
-            HStack {
-                // Quit button
+            // Compact Header - arcade style
+            HStack(spacing: 0) {
+                // Quit button - minimal
                 Button(action: {
                     HapticManager.shared.light()
                     showQuitAlert = true
                 }) {
-                    HStack(spacing: 3) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: isSmallScreen ? 12 : 13))
-                        Text("Desistir")
-                            .font(.system(size: isSmallScreen ? 12 : 13, weight: .semibold))
-                    }
-                    .foregroundColor(.white)
-                    .padding(.horizontal, isSmallScreen ? 8 : 10)
-                    .padding(.vertical, isSmallScreen ? 5 : 6)
-                    .background(Color.red)
-                    .cornerRadius(8)
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 22))
+                        .foregroundColor(.red.opacity(0.8))
                 }
+                .frame(width: 44)
 
                 Spacer()
 
-                VStack(alignment: .center, spacing: 2) {
-                    Text("Ronda \(gameManager.currentRoundIndex + 1)/\(gameManager.totalRounds)")
-                        .font(.system(size: isSmallScreen ? 12 : 13))
-                        .foregroundColor(.secondary)
-                    HStack(spacing: 4) {
-                        Text("Pontuação:")
-                            .font(.system(size: isSmallScreen ? 16 : 18, weight: .bold))
-                        Text("\(displayedScore)")
-                            .font(.system(size: isSmallScreen ? 16 : 18, weight: .bold))
-                            .foregroundColor(.blue)
+                // Center - Score display or Timer (timed mode)
+                if gameManager.gameMode == .timed {
+                    // Timed mode header
+                    VStack(spacing: 4) {
+                        // Timer display
+                        TimerDisplayView(
+                            timeRemaining: gameManager.timeRemaining,
+                            totalTime: gameManager.timedModeSelection?.seconds ?? 60,
+                            isSmallScreen: isSmallScreen
+                        )
+
+                        // Questions answered count
+                        HStack(spacing: 6) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 12))
+                                .foregroundColor(.green)
+                            Text("\(gameManager.questionsAnswered)")
+                                .font(.system(size: isSmallScreen ? 16 : 18, weight: .bold))
+                            Text("respostas")
+                                .font(.system(size: isSmallScreen ? 11 : 12))
+                                .foregroundColor(.secondary)
+                        }
+
+                        // Score
+                        Text("\(displayedScore) pts")
+                            .font(.system(size: isSmallScreen ? 14 : 16, weight: .semibold))
+                            .foregroundColor(.secondary)
                             .scaleEffect(scoreScale)
-                            .fixedSize(horizontal: true, vertical: false)
                             .overlay(
                                 GeometryReader { geo in
                                     Color.clear
@@ -336,49 +349,68 @@ struct GameView: View {
                                 }
                             )
                     }
-                    .fixedSize(horizontal: true, vertical: false)
+                } else {
+                    // Classic mode header
+                    VStack(spacing: 2) {
+                        // Round indicator
+                        HStack(spacing: 4) {
+                            ForEach(0..<gameManager.totalRounds, id: \.self) { index in
+                                Circle()
+                                    .fill(index < gameManager.currentRoundIndex ? Color.green :
+                                          index == gameManager.currentRoundIndex ? Color.blue : Color.secondary.opacity(0.3))
+                                    .frame(width: isSmallScreen ? 6 : 7, height: isSmallScreen ? 6 : 7)
+                            }
+                        }
 
-                    // Multiplier indicator
-                    MultiplierIndicatorView(
-                        multiplier: displayedMultiplier,
-                        scale: multiplierScale,
-                        isSmallScreen: isSmallScreen
-                    )
+                        // Score
+                        Text("\(displayedScore)")
+                            .font(.system(size: isSmallScreen ? 28 : 32, weight: .black, design: .rounded))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [.blue, .purple],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .scaleEffect(scoreScale)
+                            .overlay(
+                                GeometryReader { geo in
+                                    Color.clear
+                                        .preference(key: ScorePositionKey.self, value: geo.frame(in: .named("gameView")))
+                                }
+                            )
+
+                        // Multiplier
+                        MultiplierIndicatorView(
+                            multiplier: displayedMultiplier,
+                            scale: multiplierScale,
+                            isSmallScreen: isSmallScreen
+                        )
+                    }
                 }
 
                 Spacer()
 
-                // Skip button (only in normal mode)
-                if let round = gameManager.currentRound, !round.isReverseMode,
+                // Skip button (only in classic normal mode)
+                if gameManager.gameMode == .classic,
+                   let round = gameManager.currentRound, !round.isReverseMode,
                    gameManager.skipsRemaining > 0 && !gameManager.hasSkippedCurrentRound {
                     Button(action: {
                         withAnimation {
                             gameManager.skipCurrentCountry()
                         }
                     }) {
-                        HStack(spacing: 3) {
-                            Image(systemName: "forward.fill")
-                                .font(.system(size: isSmallScreen ? 12 : 13))
-                            Text("Skip")
-                                .font(.system(size: isSmallScreen ? 12 : 13, weight: .semibold))
-                        }
-                        .foregroundColor(.white)
-                        .padding(.horizontal, isSmallScreen ? 8 : 10)
-                        .padding(.vertical, isSmallScreen ? 5 : 6)
-                        .background(Color.orange)
-                        .cornerRadius(8)
+                        Image(systemName: "forward.fill")
+                            .font(.system(size: 18))
+                            .foregroundColor(.orange)
                     }
+                    .frame(width: 44)
                 } else {
-                    // Spacer invisível para manter o centro alinhado
-                    Color.clear
-                        .frame(width: isSmallScreen ? 80 : 90, height: 1)
+                    Color.clear.frame(width: 44)
                 }
             }
-            .padding(.horizontal)
-            .padding(.top, 16)
-            .padding(.bottom, 8)
-            .background(Color(UIColor.systemBackground))
-            .fixedSize(horizontal: false, vertical: true)
+            .frame(height: isSmallScreen ? 70 : 80) // Fixed header height for consistency
+            .padding(.horizontal, 12)
             .alert("Desistir do Jogo?", isPresented: $showQuitAlert) {
                 Button("Cancelar", role: .cancel) { }
                 Button("Desistir", role: .destructive) {
@@ -391,206 +423,173 @@ struct GameView: View {
                 Text("Tem a certeza que deseja desistir? O seu progresso será perdido.")
             }
 
-            // Scrollable content
-            ScrollView {
-                VStack(spacing: 0) {
-                    if let round = gameManager.currentRound {
-                        // Display based on mode
+            // Main content - NO ScrollView, fixed layout, aligned to top
+            VStack(spacing: 0) {
+                if let round = gameManager.currentRound {
+                    // Top section: Country/Category display card
+                    VStack(spacing: isSmallScreen ? 4 : 6) {
                         if round.isReverseMode {
-                            // Reverse mode: Show category
-                            VStack(spacing: isSmallScreen ? 8 : 16) {
-                                ZStack {
-                                    // Category icon
-                                    if let category = round.category {
-                                        Image(systemName: category.icon)
-                                            .font(.system(size: categoryIconSize))
-                                            .foregroundColor(.blue)
-                                            .scaleEffect(showFinalFlag ? 1.0 : 0.3)
-                                            .opacity(showFinalFlag ? 1.0 : 0)
-                                    }
-                                }
-                                .frame(height: categoryIconSize + (isSmallScreen ? 8 : 16))
-
-                                if showFinalFlag, let category = round.category {
-                                    VStack(spacing: 4) {
-                                        Text(category.rawValue)
-                                            .font(.system(size: titleFontSize, weight: .bold))
-                                            .transition(.opacity.combined(with: .move(edge: .bottom)))
-
-                                        Text(category.description)
-                                            .font(.system(size: isSmallScreen ? 12 : 14))
-                                            .foregroundColor(.secondary)
-                                            .multilineTextAlignment(.center)
-                                            .lineLimit(2)
-                                            .padding(.horizontal, isSmallScreen ? 16 : 24)
-                                            .transition(.opacity)
-                                        
-                                    }
-                                }
+                            // Reverse mode: Show category icon
+                            if let category = round.category {
+                                Image(systemName: category.icon)
+                                    .font(.system(size: flagSize)) // Same size as flag
+                                    .foregroundStyle(
+                                        LinearGradient(colors: [.purple, .pink], startPoint: .top, endPoint: .bottom)
+                                    )
+                                    .scaleEffect(showFinalFlag ? 1.0 : 0.3)
+                                    .opacity(showFinalFlag ? 1.0 : 0)
+                                    .frame(height: flagSize + 8)
                             }
-                            .padding(.vertical, isSmallScreen ? 16 : 24)
-                            .frame(maxWidth: .infinity)
-                            .background(
-                                RoundedRectangle(cornerRadius: isSmallScreen ? 12 : 16)
-                                    .fill(Color.blue.opacity(0.1))
-                                    .shadow(color: .blue.opacity(0.1), radius: isSmallScreen ? 4 : 8, x: 0, y: isSmallScreen ? 2 : 4)
-                            )
-                            .padding(.horizontal, isSmallScreen ? 12 : 16)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .padding(.top, 16)
+
+                            // Category name
+                            if showFinalFlag, let category = round.category {
+                                Text(category.rawValue)
+                                    .font(.system(size: titleFontSize, weight: .bold))
+                            }
                         } else {
-                            // Normal mode: Show country with animation
-                            VStack(spacing: isSmallScreen ? 8 : 16) {
-                                ZStack {
-                                    // Slot machine animation
-                                    if isAnimating && !animatingFlags.isEmpty {
-                                        Text(animatingFlags[currentFlagIndex % animatingFlags.count])
-                                            .font(.system(size: flagSize * 0.95))
-                                            .opacity(0.85)
-                                            .id("flag-\(currentFlagIndex)")
-                                            .transition(.asymmetric(
-                                                insertion: .move(edge: .trailing),
-                                                removal: .move(edge: .leading)
-                                            ))
-                                    }
-
-                                    // Final flag
-                                    if showFinalFlag, let country = round.country {
-                                        Text(country.flag)
-                                            .font(.system(size: flagSize))
-                                            .scaleEffect(showFinalFlag ? 1.0 : 0.3)
-                                            .opacity(showFinalFlag ? 1.0 : 0)
-                                            .rotationEffect(.degrees(showFinalFlag ? 0 : -180))
-                                    }
+                            // Normal mode: Show country with carousel/roulette animation
+                            ZStack {
+                                if isAnimating && !animatingFlags.isEmpty {
+                                    FlagCarouselView(
+                                        flags: animatingFlags,
+                                        currentIndex: currentFlagIndex,
+                                        flagSize: flagSize
+                                    )
                                 }
-                                .frame(height: flagSize + (isSmallScreen ? 8 : 16))
 
+                                // Final flag with bounce
                                 if showFinalFlag, let country = round.country {
-                                    Text(country.name)
-                                        .font(.system(size: titleFontSize, weight: .bold))
-                                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+                                    Text(country.flag)
+                                        .font(.system(size: flagSize))
+                                        .scaleEffect(showFinalFlag ? 1.0 : 0.5)
+                                        .opacity(showFinalFlag ? 1.0 : 0)
                                 }
                             }
-                            .padding(.vertical, isSmallScreen ? 16 : 24)
-                            .frame(maxWidth: .infinity)
-                            .background(
-                                RoundedRectangle(cornerRadius: isSmallScreen ? 12 : 16)
-                                    .fill(Color.blue.opacity(0.1))
-                                    .shadow(color: .blue.opacity(0.1), radius: isSmallScreen ? 4 : 8, x: 0, y: isSmallScreen ? 2 : 4)
+                            .frame(height: flagSize + 8)
+
+                            // Country name
+                            if showFinalFlag, let country = round.country {
+                                Text(country.name)
+                                    .font(.system(size: titleFontSize, weight: .bold))
+                                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, isSmallScreen ? 10 : 14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(
+                                LinearGradient(
+                                    colors: round.isReverseMode ? [Color.purple.opacity(0.1), Color.pink.opacity(0.05)] : [Color.blue.opacity(0.1), Color.cyan.opacity(0.05)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
                             )
-                            .padding(.horizontal, isSmallScreen ? 12 : 16)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .padding(.top, 16)
-                        }
+                    )
+                    .padding(.horizontal, 12)
 
-                        // Question (fora do modo-specific)
-                        if showFinalFlag && !round.isCompleted {
-                            Text(round.isReverseMode ? "Qual país tem o melhor ranking?" : "Qual a categoria com melhor ranking?")
-                                .font(.system(size: isSmallScreen ? 14 : 16, weight: .semibold))
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal)
-                                .padding(.top, 24)
-                                .transition(.opacity)
-                        }
+                    // Question text - only when not completed
+                    if showFinalFlag && !round.isCompleted {
+                        Text(round.isReverseMode ? "Qual país tem o melhor ranking?" : "Qual a melhor categoria?")
+                            .font(.system(size: isSmallScreen ? 13 : 15, weight: .medium))
+                            .foregroundColor(.secondary)
+                            .padding(.top, isSmallScreen ? 4 : 6)
+                            .padding(.bottom, isSmallScreen ? 4 : 6)
+                    }
 
-                        // Show trivia/fact when round is completed
-                        if round.isCompleted, let trivia = round.triviaMessage {
-                            TriviaCard(message: trivia, isSmallScreen: isSmallScreen)
-                                .padding(.horizontal, isSmallScreen ? 12 : 16)
-                                .padding(.top, isSmallScreen ? 12 : 16)
-                                .transition(.asymmetric(
-                                    insertion: .scale(scale: 0.8).combined(with: .opacity),
-                                    removal: .opacity
-                                ))
-                        }
+                    // Trivia when completed (only in classic mode)
+                    if gameManager.gameMode == .classic, round.isCompleted, let trivia = round.triviaMessage {
+                        CompactTriviaCard(message: trivia, isSmallScreen: isSmallScreen)
+                            .padding(.horizontal, 12)
+                            .padding(.top, isSmallScreen ? 4 : 6)
+                    }
 
-                        // Options - Categories or Countries based on mode
-                        VStack(spacing: categorySpacing) {
-                            if round.isReverseMode {
-                                // Reverse mode: show countries
-                                if let category = round.category, let options = round.countryOptions {
-                                    ForEach(options) { country in
-                                        CountryOptionButton(
-                                            country: country,
-                                            category: category,
-                                            isSelected: round.selectedCountry?.id == country.id,
-                                            isDisabled: round.isCompleted || isAnimating,
-                                            roundScore: round.roundScore,
-                                            isBestChoice: round.isCompleted && country.ranking(for: category) == options.map { $0.ranking(for: category) }.min(),
-                                            isSmallScreen: isSmallScreen
-                                        ) { buttonFrame in
-                                            if !round.isCompleted && !isAnimating {
-                                                HapticManager.shared.selection()
-                                                withAnimation(.spring()) {
-                                                    gameManager.selectCountry(country)
+                    // Fixed spacer between card and buttons
+                    Spacer()
+                        .frame(height: isSmallScreen ? 8 : 12)
+
+                    // Options grid - Categories or Countries
+                    VStack(spacing: optionSpacing) {
+                        if round.isReverseMode {
+                            if let category = round.category, let options = round.countryOptions {
+                                ForEach(options) { country in
+                                    CompactCountryButton(
+                                        country: country,
+                                        category: category,
+                                        isSelected: round.selectedCountry?.id == country.id,
+                                        isDisabled: round.isCompleted || isAnimating,
+                                        roundScore: round.roundScore,
+                                        isBestChoice: round.isCompleted && country.ranking(for: category) == options.map { $0.ranking(for: category) }.min(),
+                                        isSmallScreen: isSmallScreen
+                                    ) { buttonFrame in
+                                        if !round.isCompleted && !isAnimating {
+                                            HapticManager.shared.selection()
+                                            withAnimation(.spring()) {
+                                                gameManager.selectCountry(country)
+                                            }
+                                            if let score = gameManager.rounds[gameManager.currentRoundIndex].roundScore {
+                                                triggerFlyingScore(value: score.finalScore, from: buttonFrame)
+                                                if score.hasSpeedBonus {
+                                                    triggerSpeedBonus(value: score.speedBonus)
                                                 }
-                                                // Trigger flying score and bonus animations
-                                                if let score = gameManager.rounds[gameManager.currentRoundIndex].roundScore {
-                                                    triggerFlyingScore(value: score.finalScore, from: buttonFrame)
-                                                    if score.hasSpeedBonus {
-                                                        triggerSpeedBonus(value: score.speedBonus)
-                                                    }
-                                                    // Play appropriate sound based on bonuses
-                                                    playBonusSound(hasSpeedBonus: score.hasSpeedBonus, hasStreakBonus: gameManager.currentStreak >= 2)
-                                                }
+                                                playBonusSound(hasSpeedBonus: score.hasSpeedBonus, hasStreakBonus: gameManager.currentStreak >= 2)
                                             }
                                         }
                                     }
                                 }
-                            } else {
-                                // Normal mode: show categories
-                                ForEach(round.availableCategories) { category in
-                                    if let country = round.country {
-                                        CategoryButton(
-                                            category: category,
-                                            country: country,
-                                            isSelected: round.selectedCategory == category,
-                                            isAvailable: true,
-                                            isDisabled: round.isCompleted || isAnimating,
-                                            roundScore: round.roundScore,
-                                            isBestCategory: round.isCompleted && gameManager.getOptimalScoreForRound(round)?.category == category,
-                                            isSmallScreen: isSmallScreen
-                                        ) { buttonFrame in
-                                            if !round.isCompleted && !isAnimating {
-                                                HapticManager.shared.selection()
-                                                withAnimation(.spring()) {
-                                                    gameManager.selectCategory(category)
+                            }
+                        } else {
+                            ForEach(round.availableCategories) { category in
+                                if let country = round.country {
+                                    CompactCategoryButton(
+                                        category: category,
+                                        country: country,
+                                        isSelected: round.selectedCategory == category,
+                                        isDisabled: round.isCompleted || isAnimating,
+                                        roundScore: round.roundScore,
+                                        isBestCategory: round.isCompleted && gameManager.getOptimalScoreForRound(round)?.category == category,
+                                        isSmallScreen: isSmallScreen
+                                    ) { buttonFrame in
+                                        if !round.isCompleted && !isAnimating {
+                                            HapticManager.shared.selection()
+                                            withAnimation(.spring()) {
+                                                gameManager.selectCategory(category)
+                                            }
+                                            if let score = gameManager.rounds[gameManager.currentRoundIndex].roundScore {
+                                                triggerFlyingScore(value: score.finalScore, from: buttonFrame)
+                                                if score.hasSpeedBonus {
+                                                    triggerSpeedBonus(value: score.speedBonus)
                                                 }
-                                                // Trigger flying score and bonus animations
-                                                if let score = gameManager.rounds[gameManager.currentRoundIndex].roundScore {
-                                                    triggerFlyingScore(value: score.finalScore, from: buttonFrame)
-                                                    if score.hasSpeedBonus {
-                                                        triggerSpeedBonus(value: score.speedBonus)
-                                                    }
-                                                    // Play appropriate sound based on bonuses
-                                                    playBonusSound(hasSpeedBonus: score.hasSpeedBonus, hasStreakBonus: gameManager.currentStreak >= 2)
-                                                }
+                                                playBonusSound(hasSpeedBonus: score.hasSpeedBonus, hasStreakBonus: gameManager.currentStreak >= 2)
                                             }
                                         }
                                     }
                                 }
                             }
                         }
-                        .padding(.horizontal, isSmallScreen ? 16 : 16)
-                        .padding(.top, 24)
-                        .padding(.bottom, isSmallScreen ? 24 : 32)
-                        .opacity(isAnimating ? 0.5 : 1.0)
                     }
+                    .padding(.horizontal, 12)
+                    .opacity(isAnimating ? 0.5 : 1.0)
+
+                    // Bottom spacer - flexible to push content up
+                    Spacer(minLength: isSmallScreen ? 8 : 12)
                 }
-                .opacity(roundContentOpacity)
-                .offset(x: roundContentOffset)
-                .onChange(of: gameManager.currentRoundIndex) { oldValue, newValue in
-                    if newValue != previousRoundIndex {
-                        showAllRankings = false
-                        startFlagAnimation()
-                        previousRoundIndex = newValue
-                    }
+            }
+            .frame(maxHeight: .infinity, alignment: .top) // Force content to align to top
+            .opacity(roundContentOpacity)
+            .offset(x: roundContentOffset)
+            .onChange(of: gameManager.currentRoundIndex) { oldValue, newValue in
+                if newValue != previousRoundIndex {
+                    showAllRankings = false
+                    startFlagAnimation()
+                    previousRoundIndex = newValue
                 }
-                .onAppear {
-                    if previousRoundIndex == -1 {
-                        startFlagAnimation()
-                        previousRoundIndex = gameManager.currentRoundIndex
-                    }
+            }
+            .onAppear {
+                if previousRoundIndex == -1 {
+                    startFlagAnimation()
+                    previousRoundIndex = gameManager.currentRoundIndex
                 }
             }
 
@@ -796,68 +795,92 @@ struct GameView: View {
     private func performFlagAnimation() {
         let currentSessionId = gameManager.gameSessionId
 
+        // Reset animation state
+        showFinalFlag = false
+        isAnimating = false
+        currentFlagIndex = 0
+
         // Check if reverse mode
         if let round = gameManager.currentRound, round.isReverseMode {
-            // For reverse mode, just show the category icon immediately
+            // For reverse mode, show the category icon with a nice entrance
             HapticManager.shared.light()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [self] in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [self] in
                 guard gameManager.gameSessionId == currentSessionId else { return }
-                withAnimation(.timingCurve(0.34, 1.56, 0.64, 1, duration: 0.55)) {
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
                     showFinalFlag = true
                 }
-                // Start speed bonus timer after animation completes
                 gameManager.resetCurrentRoundStartTime()
             }
             return
         }
 
-        // Get random flags for normal mode
+        // Get random flags for carousel/roulette effect
+        // The country's flag should be in the middle with random flags before AND after
+        // This gives the feeling that the roulette stopped randomly
         let allFlags = CountryData.shared.countries.map { $0.flag }
-        animatingFlags = Array(allFlags.shuffled().prefix(18))
+        let countryFlag = gameManager.currentRound?.country?.flag ?? "🌍"
+
+        // Get random flags excluding the country's flag
+        var otherFlags = allFlags.filter { $0 != countryFlag }.shuffled()
+
+        // Build the array: random flags + country flag + more random flags after
+        let flagsBefore = Array(otherFlags.prefix(14))
+        let flagsAfter = Array(otherFlags.dropFirst(14).prefix(4))
+
+        animatingFlags = flagsBefore + [countryFlag] + flagsAfter
+
+        // The target index is where the country flag is (after flagsBefore)
+        let targetIndex = flagsBefore.count
 
         HapticManager.shared.light()
 
-        // Start immediately
+        // Roulette/carousel effect: start fast, decelerate smoothly
+        // Animation goes from 0 to targetIndex (where the country flag is)
+        let totalSteps = targetIndex + 1
+        var cumulativeTime = 0.0
+        let startDelay = 0.1
+
+        // Set isAnimating immediately
         isAnimating = true
 
-        // Variable speed intervals (slot machine effect)
-        let intervals: [Double] = [0.12, 0.11, 0.10, 0.08, 0.07, 0.06, 0.05, 0.05, 0.05, 0.06, 0.07, 0.08, 0.10, 0.12, 0.15, 0.18, 0.22, 0.28]
+        for i in 0..<totalSteps {
+            // Smooth deceleration curve (like a spinning wheel slowing down)
+            let progress = Double(i) / Double(max(totalSteps - 1, 1))
+            // Starts at ~0.05s, ends at ~0.25s per flag
+            let interval = 0.05 + (0.20 * pow(progress, 2.0))
+            cumulativeTime += interval
 
-        var cumulativeTime = 0.0
-        for i in 0..<18 {
-            cumulativeTime += intervals[i]
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + cumulativeTime) { [self] in
+            DispatchQueue.main.asyncAfter(deadline: .now() + startDelay + cumulativeTime) { [self] in
                 guard gameManager.gameSessionId == currentSessionId else { return }
-                withAnimation(.linear(duration: intervals[i] * 0.75)) {
-                    currentFlagIndex = i
-                }
+                guard isAnimating else { return }
 
-                // Haptic at key moments
-                if i < 4 || i > 13 {
+                // Update index - animation is handled by FlagCarouselView
+                currentFlagIndex = i
+
+                // Haptic feedback: frequent at start (spinning fast), sparse at end (slowing down)
+                if i < 4 {
                     HapticManager.shared.selection()
+                } else if i > totalSteps - 3 {
+                    HapticManager.shared.light()
                 }
             }
         }
 
-        // Hide animation and show final flag
-        DispatchQueue.main.asyncAfter(deadline: .now() + cumulativeTime + 0.2) { [self] in
+        // Final reveal - the carousel is already showing the country's flag (last in array)
+        // Just transition smoothly to showFinalFlag
+        DispatchQueue.main.asyncAfter(deadline: .now() + startDelay + cumulativeTime + 0.3) { [self] in
             guard gameManager.gameSessionId == currentSessionId else { return }
-            withAnimation(.easeOut(duration: 0.12)) {
-                isAnimating = false
-            }
 
             HapticManager.shared.medium()
 
-            // Show final flag with easeOutBack
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) { [self] in
-                guard gameManager.gameSessionId == currentSessionId else { return }
-                withAnimation(.timingCurve(0.34, 1.56, 0.64, 1, duration: 0.55)) {
-                    showFinalFlag = true
-                }
-                // Start speed bonus timer after animation completes
-                gameManager.resetCurrentRoundStartTime()
+            // Hide carousel and show final flag simultaneously
+            withAnimation(.easeOut(duration: 0.15)) {
+                isAnimating = false
             }
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
+                showFinalFlag = true
+            }
+            gameManager.resetCurrentRoundStartTime()
         }
     }
 }
@@ -1077,6 +1100,254 @@ struct CountryOptionButton: View {
         } else {
             return .primary
         }
+    }
+}
+
+// MARK: - Flag Carousel View
+struct FlagCarouselView: View {
+    let flags: [String]
+    let currentIndex: Int
+    let flagSize: CGFloat
+
+    private var spacing: CGFloat { 10 }
+
+    var body: some View {
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: spacing) {
+                    ForEach(Array(flags.enumerated()), id: \.offset) { index, flag in
+                        let distance = abs(index - currentIndex)
+
+                        Text(flag)
+                            .font(.system(size: flagSize))
+                            .scaleEffect(scale(for: distance))
+                            .opacity(opacity(for: distance))
+                            .blur(radius: blur(for: distance))
+                            .frame(width: flagSize + 4, height: flagSize + 4)
+                            .id(index)
+                    }
+                }
+                .padding(.horizontal, UIScreen.main.bounds.width / 2 - flagSize / 2)
+            }
+            .scrollDisabled(true)
+            .onChange(of: currentIndex) { _, newIndex in
+                withAnimation(.easeOut(duration: 0.1)) {
+                    proxy.scrollTo(newIndex, anchor: .center)
+                }
+            }
+            .onAppear {
+                proxy.scrollTo(currentIndex, anchor: .center)
+            }
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func scale(for distance: Int) -> CGFloat {
+        switch distance {
+        case 0: return 1.0
+        case 1: return 0.8
+        case 2: return 0.6
+        default: return 0.5
+        }
+    }
+
+    private func opacity(for distance: Int) -> Double {
+        switch distance {
+        case 0: return 1.0
+        case 1: return 0.55
+        case 2: return 0.25
+        default: return 0.1
+        }
+    }
+
+    private func blur(for distance: Int) -> CGFloat {
+        switch distance {
+        case 0: return 0
+        case 1: return 0.5
+        case 2: return 1.2
+        default: return 2.0
+        }
+    }
+}
+
+// MARK: - Compact Category Button
+struct CompactCategoryButton: View {
+    let category: Category
+    let country: Country
+    let isSelected: Bool
+    let isDisabled: Bool
+    let roundScore: RoundScore?
+    let isBestCategory: Bool
+    let isSmallScreen: Bool
+    let action: (CGRect) -> Void
+
+    @State private var buttonFrame: CGRect = .zero
+
+    var body: some View {
+        Button(action: { action(buttonFrame) }) {
+            HStack(spacing: 12) {
+                Image(systemName: category.icon)
+                    .font(.system(size: isSmallScreen ? 22 : 24))
+                    .frame(width: 32)
+                    .foregroundColor(isSelected ? .white : .blue)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(category.rawValue)
+                        .font(.system(size: isSmallScreen ? 16 : 18, weight: .semibold))
+                        .lineLimit(1)
+
+                    Text(category.description)
+                        .font(.system(size: isSmallScreen ? 13 : 14))
+                        .foregroundColor(isSelected ? .white.opacity(0.8) : .secondary)
+                        .lineLimit(1)
+                }
+
+                Spacer()
+
+                if let score = roundScore, (isSelected || isBestCategory) {
+                    CompactScoreBadge(
+                        score: isBestCategory ? GameManager.maxPointsPerRound : score.finalScore,
+                        showStar: isBestCategory,
+                        isSmallScreen: isSmallScreen
+                    )
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, isSmallScreen ? 12 : 14)
+            .frame(maxWidth: .infinity)
+            .background(
+                GeometryReader { geo in
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(isSelected ? Color.blue : Color.secondary.opacity(0.1))
+                        .onAppear { buttonFrame = geo.frame(in: .named("gameView")) }
+                        .onChange(of: geo.frame(in: .named("gameView"))) { _, newFrame in
+                            buttonFrame = newFrame
+                        }
+                }
+            )
+            .foregroundColor(isSelected ? .white : .primary)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(isBestCategory ? Color.yellow : Color.clear, lineWidth: 2)
+            )
+        }
+        .disabled(isDisabled)
+    }
+}
+
+// MARK: - Compact Country Button
+struct CompactCountryButton: View {
+    let country: Country
+    let category: Category
+    let isSelected: Bool
+    let isDisabled: Bool
+    let roundScore: RoundScore?
+    let isBestChoice: Bool
+    let isSmallScreen: Bool
+    let action: (CGRect) -> Void
+
+    @State private var buttonFrame: CGRect = .zero
+
+    var body: some View {
+        Button(action: { action(buttonFrame) }) {
+            HStack(spacing: 14) {
+                Text(country.flag)
+                    .font(.system(size: isSmallScreen ? 30 : 34))
+
+                Text(country.name)
+                    .font(.system(size: isSmallScreen ? 17 : 19, weight: .semibold))
+                    .lineLimit(1)
+
+                Spacer()
+
+                if let score = roundScore, (isSelected || isBestChoice) {
+                    CompactScoreBadge(
+                        score: isBestChoice ? GameManager.maxPointsPerRound : score.finalScore,
+                        showStar: isBestChoice,
+                        isSmallScreen: isSmallScreen
+                    )
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, isSmallScreen ? 12 : 14)
+            .frame(maxWidth: .infinity)
+            .background(
+                GeometryReader { geo in
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(isSelected ? Color.purple : Color.secondary.opacity(0.1))
+                        .onAppear { buttonFrame = geo.frame(in: .named("gameView")) }
+                        .onChange(of: geo.frame(in: .named("gameView"))) { _, newFrame in
+                            buttonFrame = newFrame
+                        }
+                }
+            )
+            .foregroundColor(isSelected ? .white : .primary)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(isBestChoice ? Color.yellow : Color.clear, lineWidth: 2)
+            )
+        }
+        .disabled(isDisabled)
+    }
+}
+
+// MARK: - Compact Score Badge
+struct CompactScoreBadge: View {
+    let score: Int
+    let showStar: Bool
+    let isSmallScreen: Bool
+
+    private var badgeColor: Color {
+        switch score {
+        case 1000...: return .green
+        case 750..<1000: return .blue
+        case 500..<750: return .cyan
+        case 250..<500: return .orange
+        default: return .red
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: 4) {
+            if showStar {
+                Image(systemName: "star.fill")
+                    .font(.system(size: 11))
+                    .foregroundColor(.yellow)
+            }
+            Text("+\(score)")
+                .font(.system(size: isSmallScreen ? 14 : 15, weight: .bold))
+                .foregroundColor(.white)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(badgeColor)
+        .cornerRadius(8)
+    }
+}
+
+// MARK: - Compact Trivia Card
+struct CompactTriviaCard: View {
+    let message: String
+    let isSmallScreen: Bool
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "lightbulb.fill")
+                .font(.system(size: 16))
+                .foregroundColor(.yellow)
+
+            Text(message)
+                .font(.system(size: isSmallScreen ? 13 : 14))
+                .foregroundColor(.secondary)
+                .lineLimit(2)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color.yellow.opacity(0.1))
+        )
     }
 }
 
@@ -1549,6 +1820,61 @@ struct ExtraRoundBannerView: View {
                 glowOpacity = 0.6
             }
         }
+    }
+}
+
+// MARK: - Timer Display View (for timed mode)
+struct TimerDisplayView: View {
+    let timeRemaining: Double
+    let totalTime: Double
+    let isSmallScreen: Bool
+
+    private var timeColor: Color {
+        let percentage = timeRemaining / totalTime
+        switch percentage {
+        case 0.5...: return .green
+        case 0.25..<0.5: return .orange
+        default: return .red
+        }
+    }
+
+    private var formattedTime: String {
+        let seconds = Int(timeRemaining)
+        let minutes = seconds / 60
+        let remainingSeconds = seconds % 60
+        if minutes > 0 {
+            return String(format: "%d:%02d", minutes, remainingSeconds)
+        } else {
+            return String(format: "0:%02d", remainingSeconds)
+        }
+    }
+
+    private var isLowTime: Bool {
+        timeRemaining < 10
+    }
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "timer")
+                .font(.system(size: isSmallScreen ? 16 : 18, weight: .semibold))
+                .foregroundColor(timeColor)
+
+            Text(formattedTime)
+                .font(.system(size: isSmallScreen ? 24 : 28, weight: .black, design: .monospaced))
+                .foregroundColor(timeColor)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(timeColor.opacity(0.15))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(timeColor.opacity(0.5), lineWidth: 2)
+                )
+        )
+        .scaleEffect(isLowTime ? 1.05 : 1.0)
+        .animation(isLowTime ? .easeInOut(duration: 0.5).repeatForever(autoreverses: true) : .default, value: isLowTime)
     }
 }
 

@@ -39,10 +39,41 @@ class GameManager: ObservableObject {
     // End game bonus
     @Published var mysteryBonus: Int = 0
 
+    // Timed mode properties
+    @Published var gameMode: GameMode = .classic
+    @Published var timedModeSelection: TimedModeOption? = nil
+    @Published var timeRemaining: Double = 0
+    @Published var questionsAnswered: Int = 0
+    @Published var correctAnswers: Int = 0
+    private var gameTimer: Timer?
+
     enum GameState {
         case notStarted
         case playing
         case finished
+    }
+
+    enum GameMode: Equatable {
+        case classic
+        case timed
+    }
+
+    enum TimedModeOption: Int, CaseIterable {
+        case thirty = 30
+        case sixty = 60
+        case onetwenty = 120
+
+        var displayName: String {
+            switch self {
+            case .thirty: return "30s"
+            case .sixty: return "1 min"
+            case .onetwenty: return "2 min"
+            }
+        }
+
+        var seconds: Double {
+            return Double(rawValue)
+        }
     }
 
     // Calculate streak multiplier based on consecutive perfect scores
@@ -72,6 +103,8 @@ class GameManager: ObservableObject {
 
         // Reset game state
         gameState = .playing
+        gameMode = .classic
+        timedModeSelection = nil
         rounds = []
         currentRoundIndex = 0
         totalScore = 0
@@ -83,12 +116,110 @@ class GameManager: ObservableObject {
         hasEarnedExtraRound = false
         totalRounds = 5
         mysteryBonus = 0
+        questionsAnswered = 0
+        correctAnswers = 0
+        timeRemaining = 0
+        stopTimer()
 
         // Select 5 random categories (6th will be added if extra round is earned)
         selectedCategories = Category.allCases.shuffled().prefix(5).map { $0 }
 
         // Create first round
         createNextRound()
+    }
+
+    func startTimedGame(duration: TimedModeOption) {
+        // Generate new session ID to cancel any pending async operations
+        gameSessionId = UUID()
+
+        // Reset game state
+        gameState = .playing
+        gameMode = .timed
+        timedModeSelection = duration
+        rounds = []
+        currentRoundIndex = 0
+        totalScore = 0
+        usedCountries = []
+        skipsRemaining = 0 // No skips in timed mode
+        hasSkippedCurrentRound = false
+        currentStreak = 0
+        bestStreak = 0
+        hasEarnedExtraRound = false
+        totalRounds = 999 // Unlimited rounds in timed mode
+        mysteryBonus = 0
+        questionsAnswered = 0
+        correctAnswers = 0
+        timeRemaining = duration.seconds
+
+        // Select all categories for timed mode (they cycle through)
+        selectedCategories = Category.allCases.shuffled()
+
+        // Create first round
+        createNextTimedRound()
+
+        // Start the timer
+        startTimer()
+    }
+
+    private func startTimer() {
+        stopTimer()
+        gameTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                if self.timeRemaining > 0 {
+                    self.timeRemaining -= 0.1
+                    if self.timeRemaining <= 0 {
+                        self.timeRemaining = 0
+                        self.finishTimedGame()
+                    }
+                }
+            }
+        }
+    }
+
+    private func stopTimer() {
+        gameTimer?.invalidate()
+        gameTimer = nil
+    }
+
+    private func createNextTimedRound() {
+        // In timed mode, we create simple rounds with all categories available
+        // Select a random country that hasn't been used recently
+        var country: Country
+        var attempts = 0
+        repeat {
+            country = CountryData.shared.randomCountry()
+            attempts += 1
+            // After 50 attempts, clear used countries to avoid infinite loop
+            if attempts > 50 {
+                usedCountries.removeAll()
+            }
+        } while usedCountries.contains(country.id) && attempts <= 50
+
+        usedCountries.insert(country.id)
+
+        // Keep used countries list manageable
+        if usedCountries.count > 30 {
+            usedCountries.removeAll()
+            usedCountries.insert(country.id)
+        }
+
+        // Pick 5 random categories for this round
+        let roundCategories = Array(Category.allCases.shuffled().prefix(5))
+
+        let round = GameRound(
+            roundNumber: questionsAnswered + 1,
+            country: country,
+            availableCategories: roundCategories
+        )
+
+        rounds.append(round)
+        currentRoundIndex = rounds.count - 1
+    }
+
+    private func finishTimedGame() {
+        stopTimer()
+        gameState = .finished
     }
 
     private func createNextRound() {
@@ -175,10 +306,20 @@ class GameManager: ObservableObject {
         rounds[currentRoundIndex].score = roundScore.finalScore
         rounds[currentRoundIndex].roundScore = roundScore
 
-        // Generate trivia message for the BEST category (correct answer)
-        if let bestCategory = country.bestCategory(from: rounds[currentRoundIndex].availableCategories) {
-            let bestRanking = country.ranking(for: bestCategory)
-            rounds[currentRoundIndex].triviaMessage = generateTrivia(for: country, category: bestCategory, ranking: bestRanking)
+        // Track questions answered in timed mode
+        if gameMode == .timed {
+            questionsAnswered += 1
+            if roundScore.tier == .perfect {
+                correctAnswers += 1
+            }
+        }
+
+        // Generate trivia message for the BEST category (correct answer) - only in classic mode
+        if gameMode == .classic {
+            if let bestCategory = country.bestCategory(from: rounds[currentRoundIndex].availableCategories) {
+                let bestRanking = country.ranking(for: bestCategory)
+                rounds[currentRoundIndex].triviaMessage = generateTrivia(for: country, category: bestCategory, ranking: bestRanking)
+            }
         }
 
         // Update total score
@@ -200,7 +341,15 @@ class GameManager: ObservableObject {
             }
         }
 
-        // Move to next round after a delay (5 seconds to read trivia)
+        // In timed mode, immediately move to next question
+        if gameMode == .timed {
+            if timeRemaining > 0 {
+                createNextTimedRound()
+            }
+            return
+        }
+
+        // Classic mode: Move to next round after a delay (5 seconds to read trivia)
         // Capture session ID to cancel if game is reset
         let currentSessionId = gameSessionId
         DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { [weak self] in
@@ -443,7 +592,12 @@ class GameManager: ObservableObject {
         // Generate new session ID to cancel any pending async operations
         gameSessionId = UUID()
 
+        // Stop timer if running
+        stopTimer()
+
         gameState = .notStarted
+        gameMode = .classic
+        timedModeSelection = nil
         selectedCategories = []
         rounds = []
         currentRoundIndex = 0
@@ -454,6 +608,9 @@ class GameManager: ObservableObject {
         hasEarnedExtraRound = false
         totalRounds = 5
         mysteryBonus = 0
+        questionsAnswered = 0
+        correctAnswers = 0
+        timeRemaining = 0
     }
 
     func getBestPossibleCategory(for country: Country, from categories: [Category]) -> Category? {

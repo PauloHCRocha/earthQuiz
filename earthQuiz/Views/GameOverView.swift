@@ -22,136 +22,242 @@ struct GameOverView: View {
 
     var body: some View {
         let titleData = gameManager.getAccuracyTitle()
+        let isTimedMode = gameManager.gameMode == .timed
 
         VStack(spacing: 0) {
             ScrollView {
                 VStack(spacing: 16) {
                     // Arcade-style header
                     VStack(spacing: 8) {
-                        // GAME OVER text with arcade style
-                        Text("GAME OVER")
-                            .font(.system(size: 32, weight: .black, design: .rounded))
-                            .tracking(4)
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [.purple, .pink, .orange],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .shadow(color: .purple.opacity(0.5), radius: 10, x: 0, y: 0)
-                            .scaleEffect(showTrophy ? 1.0 : 0.5)
-                            .opacity(showTrophy ? 1 : 0)
-                            .animation(.spring(response: 0.5, dampingFraction: 0.6), value: showTrophy)
-
-                        // Title badge with emoji
-                        HStack(spacing: 8) {
-                            Text(titleData.emoji)
-                                .font(.system(size: 28))
-                            Text(titleData.title)
-                                .font(.system(size: 22, weight: .black))
+                        // Header text - different for timed mode
+                        if isTimedMode {
+                            Text("TEMPO ESGOTADO!")
+                                .font(.system(size: 28, weight: .black, design: .rounded))
+                                .tracking(2)
                                 .foregroundStyle(
                                     LinearGradient(
-                                        colors: titleGradientColors,
+                                        colors: [.orange, .red],
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     )
                                 )
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 10)
-                        .background(
-                            Capsule()
-                                .fill(Color.secondary.opacity(0.1))
-                                .overlay(
+                                .shadow(color: .orange.opacity(0.5), radius: 10, x: 0, y: 0)
+                                .scaleEffect(showTrophy ? 1.0 : 0.5)
+                                .opacity(showTrophy ? 1 : 0)
+                                .animation(.spring(response: 0.5, dampingFraction: 0.6), value: showTrophy)
+
+                            // Time duration badge
+                            if let timedOption = gameManager.timedModeSelection {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "timer")
+                                        .font(.system(size: 18))
+                                    Text(timedOption.displayName)
+                                        .font(.system(size: 20, weight: .black))
+                                }
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 10)
+                                .background(
                                     Capsule()
-                                        .stroke(
+                                        .fill(
                                             LinearGradient(
-                                                colors: titleGradientColors,
+                                                colors: [.orange, .red],
                                                 startPoint: .leading,
                                                 endPoint: .trailing
-                                            ),
-                                            lineWidth: 2
+                                            )
                                         )
                                 )
-                        )
-                        .scaleEffect(showTrophy ? 1.0 : 0.3)
-                        .opacity(showTrophy ? 1 : 0)
-                        .animation(.spring(response: 0.5, dampingFraction: 0.6).delay(0.2), value: showTrophy)
+                                .scaleEffect(showTrophy ? 1.0 : 0.3)
+                                .opacity(showTrophy ? 1 : 0)
+                                .animation(.spring(response: 0.5, dampingFraction: 0.6).delay(0.2), value: showTrophy)
+                            }
+                        } else {
+                            // GAME OVER text with arcade style
+                            Text("GAME OVER")
+                                .font(.system(size: 32, weight: .black, design: .rounded))
+                                .tracking(4)
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [.purple, .pink, .orange],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .shadow(color: .purple.opacity(0.5), radius: 10, x: 0, y: 0)
+                                .scaleEffect(showTrophy ? 1.0 : 0.5)
+                                .opacity(showTrophy ? 1 : 0)
+                                .animation(.spring(response: 0.5, dampingFraction: 0.6), value: showTrophy)
+
+                            // Title badge with emoji
+                            HStack(spacing: 8) {
+                                Text(titleData.emoji)
+                                    .font(.system(size: 28))
+                                Text(titleData.title)
+                                    .font(.system(size: 22, weight: .black))
+                                    .foregroundStyle(
+                                        LinearGradient(
+                                            colors: titleGradientColors,
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(
+                                Capsule()
+                                    .fill(Color.secondary.opacity(0.1))
+                                    .overlay(
+                                        Capsule()
+                                            .stroke(
+                                                LinearGradient(
+                                                    colors: titleGradientColors,
+                                                    startPoint: .leading,
+                                                    endPoint: .trailing
+                                                ),
+                                                lineWidth: 2
+                                            )
+                                    )
+                            )
+                            .scaleEffect(showTrophy ? 1.0 : 0.3)
+                            .opacity(showTrophy ? 1 : 0)
+                            .animation(.spring(response: 0.5, dampingFraction: 0.6).delay(0.2), value: showTrophy)
+                        }
                     }
                     .padding(.top, 16)
 
                     // Score card - more compact
                     VStack(spacing: 10) {
-                        // Main score
-                        VStack(spacing: 2) {
-                            Text("\(displayedScore)")
-                                .font(.system(size: 56, weight: .black, design: .rounded))
-                                .foregroundStyle(
-                                    LinearGradient(
-                                        colors: scoreGradientColors,
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
+                        if isTimedMode {
+                            // Timed mode: Show questions answered prominently
+                            VStack(spacing: 4) {
+                                Text("\(gameManager.questionsAnswered)")
+                                    .font(.system(size: 56, weight: .black, design: .rounded))
+                                    .foregroundStyle(
+                                        LinearGradient(
+                                            colors: [.orange, .red],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
                                     )
-                                )
-                                .scaleEffect(scoreScale)
-                                .contentTransition(.numericText())
+                                    .scaleEffect(scoreScale)
+                                    .contentTransition(.numericText())
 
-                            Text("PONTOS")
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundColor(.secondary)
-                                .tracking(2)
-                        }
-
-                        // Stats row - horizontal compact
-                        HStack(spacing: 16) {
-                            // Average
-                            StatBadge(
-                                icon: "chart.bar.fill",
-                                label: "Média",
-                                value: "\(displayedScore / max(gameManager.totalRounds, 1))",
-                                color: .blue
-                            )
-
-                            // Best Streak
-                            if gameManager.bestStreak > 0 {
-                                StatBadge(
-                                    icon: "flame.fill",
-                                    label: "Streak",
-                                    value: "\(gameManager.bestStreak)x",
-                                    color: .orange
-                                )
+                                Text("QUESTÕES")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundColor(.secondary)
+                                    .tracking(2)
                             }
 
-                            // Perfects count
-                            if gameManager.totalPerfectScores > 0 {
+                            // Stats row for timed mode
+                            HStack(spacing: 16) {
+                                // Correct answers
+                                StatBadge(
+                                    icon: "checkmark.circle.fill",
+                                    label: "Perfeitos",
+                                    value: "\(gameManager.correctAnswers)",
+                                    color: .green
+                                )
+
+                                // Accuracy percentage
+                                StatBadge(
+                                    icon: "percent",
+                                    label: "Precisão",
+                                    value: gameManager.questionsAnswered > 0 ? "\(Int(Double(gameManager.correctAnswers) / Double(gameManager.questionsAnswered) * 100))%" : "0%",
+                                    color: .blue
+                                )
+
+                                // Total score
                                 StatBadge(
                                     icon: "star.fill",
-                                    label: "Perfeitos",
-                                    value: "\(gameManager.totalPerfectScores)",
+                                    label: "Pontos",
+                                    value: "\(displayedScore)",
                                     color: .yellow
                                 )
                             }
-                        }
 
-                        // Bonus badges row
-                        if gameManager.hasEarnedExtraRound || (gameManager.mysteryBonus > 0 && showExcellenceBonus) {
-                            HStack(spacing: 8) {
-                                if gameManager.hasEarnedExtraRound {
+                            // Questions per minute
+                            if let timedOption = gameManager.timedModeSelection {
+                                let questionsPerMinute = Double(gameManager.questionsAnswered) / (timedOption.seconds / 60.0)
+                                HStack(spacing: 8) {
                                     BonusBadge(
-                                        icon: "plus.circle.fill",
-                                        text: "Ronda Extra",
-                                        colors: [.purple, .pink]
+                                        icon: "speedometer",
+                                        text: String(format: "%.1f questões/min", questionsPerMinute),
+                                        colors: [.cyan, .blue]
+                                    )
+                                }
+                            }
+                        } else {
+                            // Classic mode: Original display
+                            VStack(spacing: 2) {
+                                Text("\(displayedScore)")
+                                    .font(.system(size: 56, weight: .black, design: .rounded))
+                                    .foregroundStyle(
+                                        LinearGradient(
+                                            colors: scoreGradientColors,
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .scaleEffect(scoreScale)
+                                    .contentTransition(.numericText())
+
+                                Text("PONTOS")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundColor(.secondary)
+                                    .tracking(2)
+                            }
+
+                            // Stats row - horizontal compact
+                            HStack(spacing: 16) {
+                                // Average
+                                StatBadge(
+                                    icon: "chart.bar.fill",
+                                    label: "Média",
+                                    value: "\(displayedScore / max(gameManager.totalRounds, 1))",
+                                    color: .blue
+                                )
+
+                                // Best Streak
+                                if gameManager.bestStreak > 0 {
+                                    StatBadge(
+                                        icon: "flame.fill",
+                                        label: "Streak",
+                                        value: "\(gameManager.bestStreak)x",
+                                        color: .orange
                                     )
                                 }
 
-                                if gameManager.mysteryBonus > 0 && showExcellenceBonus {
-                                    BonusBadge(
-                                        icon: "sparkles",
-                                        text: excellenceBonusAdded ? "+\(gameManager.mysteryBonus) Adicionado" : "+\(gameManager.mysteryBonus)",
-                                        colors: [.yellow, .orange]
+                                // Perfects count
+                                if gameManager.totalPerfectScores > 0 {
+                                    StatBadge(
+                                        icon: "star.fill",
+                                        label: "Perfeitos",
+                                        value: "\(gameManager.totalPerfectScores)",
+                                        color: .yellow
                                     )
-                                    .scaleEffect(excellenceBonusScale)
+                                }
+                            }
+
+                            // Bonus badges row
+                            if gameManager.hasEarnedExtraRound || (gameManager.mysteryBonus > 0 && showExcellenceBonus) {
+                                HStack(spacing: 8) {
+                                    if gameManager.hasEarnedExtraRound {
+                                        BonusBadge(
+                                            icon: "plus.circle.fill",
+                                            text: "Ronda Extra",
+                                            colors: [.purple, .pink]
+                                        )
+                                    }
+
+                                    if gameManager.mysteryBonus > 0 && showExcellenceBonus {
+                                        BonusBadge(
+                                            icon: "sparkles",
+                                            text: excellenceBonusAdded ? "+\(gameManager.mysteryBonus) Adicionado" : "+\(gameManager.mysteryBonus)",
+                                            colors: [.yellow, .orange]
+                                        )
+                                        .scaleEffect(excellenceBonusScale)
+                                    }
                                 }
                             }
                         }
@@ -168,48 +274,55 @@ struct GameOverView: View {
                     .opacity(showScore ? 1 : 0)
                     .animation(.spring(response: 0.5, dampingFraction: 0.7).delay(0.4), value: showScore)
 
-                // Rounds Summary - compact header
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Image(systemName: "list.bullet.clipboard.fill")
-                            .foregroundColor(.blue)
-                        Text("Resumo")
-                            .font(.system(size: 16, weight: .bold))
-                        Spacer()
-                        Text("\(gameManager.totalRounds) rondas")
-                            .font(.system(size: 13))
-                            .foregroundColor(.secondary)
-                    }
+                // Rounds Summary - only show in classic mode (timed mode can have many rounds)
+                if !isTimedMode {
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Image(systemName: "list.bullet.clipboard.fill")
+                                .foregroundColor(.blue)
+                            Text("Resumo")
+                                .font(.system(size: 16, weight: .bold))
+                            Spacer()
+                            Text("\(gameManager.totalRounds) rondas")
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
+                        }
 
-                    ForEach(Array(gameManager.rounds.enumerated()), id: \.element.id) { index, round in
-                        RoundSummaryRow(
-                            index: index,
-                            round: round,
-                            showRounds: showRounds,
-                            scoreColor: scoreColor,
-                            isExtraRound: gameManager.hasEarnedExtraRound && index == gameManager.totalRounds - 1
-                        )
+                        ForEach(Array(gameManager.rounds.enumerated()), id: \.element.id) { index, round in
+                            RoundSummaryRow(
+                                index: index,
+                                round: round,
+                                showRounds: showRounds,
+                                scoreColor: scoreColor,
+                                isExtraRound: gameManager.hasEarnedExtraRound && index == gameManager.totalRounds - 1
+                            )
+                        }
                     }
+                    .padding(16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color.secondary.opacity(0.08))
+                    )
+                    .padding(.horizontal, 16)
                 }
-                .padding(16)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.secondary.opacity(0.08))
-                )
-                .padding(.horizontal, 16)
 
                 // Arcade-style buttons
                 HStack(spacing: 12) {
                     Button(action: {
                         HapticManager.shared.medium()
                         withAnimation {
-                            gameManager.startNewGame()
+                            if isTimedMode, let timedOption = gameManager.timedModeSelection {
+                                // Replay same timed mode
+                                gameManager.startTimedGame(duration: timedOption)
+                            } else {
+                                gameManager.startNewGame()
+                            }
                         }
                     }) {
                         HStack(spacing: 6) {
-                            Image(systemName: "play.fill")
+                            Image(systemName: isTimedMode ? "arrow.counterclockwise" : "play.fill")
                                 .font(.system(size: 14, weight: .bold))
-                            Text("JOGAR")
+                            Text(isTimedMode ? "REPETIR" : "JOGAR")
                                 .font(.system(size: 14, weight: .black))
                                 .tracking(1)
                         }
@@ -218,13 +331,13 @@ struct GameOverView: View {
                         .padding(.vertical, 14)
                         .background(
                             LinearGradient(
-                                colors: [.green, .mint],
+                                colors: isTimedMode ? [.orange, .red] : [.green, .mint],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
                         )
                         .cornerRadius(12)
-                        .shadow(color: .green.opacity(0.4), radius: 6, x: 0, y: 3)
+                        .shadow(color: (isTimedMode ? Color.orange : Color.green).opacity(0.4), radius: 6, x: 0, y: 3)
                     }
 
                     Button(action: {
@@ -258,6 +371,9 @@ struct GameOverView: View {
                 .background(Color.secondary.opacity(0.1))
         }
         .onAppear {
+            // Play menu music
+            SoundManager.shared.playMenuMusic()
+
             // Calculate score without excellence bonus for initial display
             let scoreWithoutBonus = gameManager.totalScore - gameManager.mysteryBonus
             displayedScore = scoreWithoutBonus

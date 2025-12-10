@@ -19,6 +19,8 @@
 		A00000190000000000000001 /* StartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000200000000000000001 /* StartView.swift */; };
 		A00000210000000000000001 /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000220000000000000001 /* GameView.swift */; };
 		A00000230000000000000001 /* GameOverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000240000000000000001 /* GameOverView.swift */; };
+		E51806022EE8F42300F8C64B /* menu.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E51806002EE8F42300F8C64B /* menu.mp3 */; };
+		E51806032EE8F42300F8C64B /* theme song loop.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E51806012EE8F42300F8C64B /* theme song loop.mp3 */; };
 		E542970B2ED6756A0061FCC2 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = E542970A2ED6756A0061FCC2 /* GoogleMobileAds */; };
 		E542970F2ED677EA0061FCC2 /* AdMobManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E542970D2ED677EA0061FCC2 /* AdMobManager.swift */; };
 		E54297102ED677EA0061FCC2 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E542970E2ED677EA0061FCC2 /* HapticManager.swift */; };
@@ -27,7 +29,6 @@
 		E557CE242EE7556F00FFC564 /* combo.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E557CE212EE7556F00FFC564 /* combo.mp3 */; };
 		E557CE252EE7556F00FFC564 /* outstanding.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E557CE222EE7556F00FFC564 /* outstanding.mp3 */; };
 		E557CE262EE7556F00FFC564 /* speed bonus.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E557CE232EE7556F00FFC564 /* speed bonus.mp3 */; };
-		E557CE282EE7579700FFC564 /* theme song loop.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E557CE272EE7579700FFC564 /* theme song loop.mp3 */; };
 		E56A4E612EDCED7A0010FA24 /* EarthQuiz.icon in Resources */ = {isa = PBXBuildFile; fileRef = E56A4E602EDCED7A0010FA24 /* EarthQuiz.icon */; };
 /* End PBXBuildFile section */
 
@@ -45,6 +46,8 @@
 		A00000220000000000000001 /* GameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
 		A00000240000000000000001 /* GameOverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverView.swift; sourceTree = "<group>"; };
 		A00000250000000000000001 /* earthQuiz.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = earthQuiz.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E51806002EE8F42300F8C64B /* menu.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = menu.mp3; sourceTree = "<group>"; };
+		E51806012EE8F42300F8C64B /* theme song loop.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "theme song loop.mp3"; sourceTree = "<group>"; };
 		E542970C2ED675920061FCC2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E542970D2ED677EA0061FCC2 /* AdMobManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdMobManager.swift; sourceTree = "<group>"; };
 		E542970E2ED677EA0061FCC2 /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
@@ -53,7 +56,6 @@
 		E557CE212EE7556F00FFC564 /* combo.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = combo.mp3; sourceTree = "<group>"; };
 		E557CE222EE7556F00FFC564 /* outstanding.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = outstanding.mp3; sourceTree = "<group>"; };
 		E557CE232EE7556F00FFC564 /* speed bonus.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "speed bonus.mp3"; sourceTree = "<group>"; };
-		E557CE272EE7579700FFC564 /* theme song loop.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "theme song loop.mp3"; sourceTree = "<group>"; };
 		E56A4E602EDCED7A0010FA24 /* EarthQuiz.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = EarthQuiz.icon; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -87,7 +89,8 @@
 				A00000320000000000000001 /* Views */,
 				A00000330000000000000001 /* Data */,
 				A00000060000000000000001 /* Assets.xcassets */,
-				E557CE272EE7579700FFC564 /* theme song loop.mp3 */,
+				E51806002EE8F42300F8C64B /* menu.mp3 */,
+				E51806012EE8F42300F8C64B /* theme song loop.mp3 */,
 				E557CE212EE7556F00FFC564 /* combo.mp3 */,
 				E557CE222EE7556F00FFC564 /* outstanding.mp3 */,
 				E557CE232EE7556F00FFC564 /* speed bonus.mp3 */,
@@ -216,12 +219,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				A00000070000000000000001 /* Preview Assets.xcassets in Resources */,
-				E557CE282EE7579700FFC564 /* theme song loop.mp3 in Resources */,
 				E557CE242EE7556F00FFC564 /* combo.mp3 in Resources */,
 				E557CE252EE7556F00FFC564 /* outstanding.mp3 in Resources */,
 				E557CE262EE7556F00FFC564 /* speed bonus.mp3 in Resources */,
 				E56A4E612EDCED7A0010FA24 /* EarthQuiz.icon in Resources */,
 				A00000050000000000000001 /* Assets.xcassets in Resources */,
+				E51806022EE8F42300F8C64B /* menu.mp3 in Resources */,
+				E51806032EE8F42300F8C64B /* theme song loop.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

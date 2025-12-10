@@ -32,6 +32,29 @@ final class SoundManager {
 
     // MARK: - Background Music
 
+    /// Start playing the menu music on loop
+    func playMenuMusic() {
+        guard let url = Bundle.main.url(forResource: "menu", withExtension: "mp3") else {
+            print("Menu music file not found: menu.mp3")
+            return
+        }
+
+        // Don't restart if already playing menu music
+        if musicPlayer?.isPlaying == true, musicPlayer?.url == url {
+            return
+        }
+
+        do {
+            musicPlayer = try AVAudioPlayer(contentsOf: url)
+            musicPlayer?.numberOfLoops = -1 // Loop indefinitely
+            musicPlayer?.volume = musicVolume
+            musicPlayer?.prepareToPlay()
+            musicPlayer?.play()
+        } catch {
+            print("Failed to play menu music: \(error)")
+        }
+    }
+
     /// Start playing the theme song on loop
     func playThemeSong() {
         guard let url = Bundle.main.url(forResource: "theme song loop", withExtension: "mp3") else {
@@ -50,25 +73,45 @@ final class SoundManager {
         }
     }
 
-    /// Stop the theme song
-    func stopThemeSong() {
+    /// Stop all background music
+    func stopMusic() {
         musicPlayer?.stop()
         musicPlayer = nil
     }
 
-    /// Pause the theme song
-    func pauseThemeSong() {
+    /// Stop the theme song (alias for stopMusic)
+    func stopThemeSong() {
+        stopMusic()
+    }
+
+    /// Pause the background music
+    func pauseMusic() {
         musicPlayer?.pause()
     }
 
-    /// Resume the theme song
-    func resumeThemeSong() {
+    /// Pause the theme song (alias for pauseMusic)
+    func pauseThemeSong() {
+        pauseMusic()
+    }
+
+    /// Resume the background music
+    func resumeMusic() {
         musicPlayer?.play()
     }
 
-    /// Check if theme song is playing
-    var isThemeSongPlaying: Bool {
+    /// Resume the theme song (alias for resumeMusic)
+    func resumeThemeSong() {
+        resumeMusic()
+    }
+
+    /// Check if any music is playing
+    var isMusicPlaying: Bool {
         return musicPlayer?.isPlaying ?? false
+    }
+
+    /// Check if theme song is playing (alias for isMusicPlaying)
+    var isThemeSongPlaying: Bool {
+        return isMusicPlaying
     }
 
     // MARK: - Sound Effects
