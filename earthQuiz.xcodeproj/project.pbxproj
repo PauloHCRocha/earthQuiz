@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E5REFACTOR01 /* GameBannerViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5REFACTOR02 /* GameBannerViews.swift */; };
+		E5REFACTOR03 /* GameButtonComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5REFACTOR04 /* GameButtonComponents.swift */; };
 		A00000010000000000000001 /* earthQuizApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000020000000000000001 /* earthQuizApp.swift */; };
 		A00000030000000000000001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000040000000000000001 /* ContentView.swift */; };
 		A00000050000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A00000060000000000000001 /* Assets.xcassets */; };
@@ -57,6 +59,8 @@
 		E557CE222EE7556F00FFC564 /* outstanding.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = outstanding.mp3; sourceTree = "<group>"; };
 		E557CE232EE7556F00FFC564 /* speed bonus.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "speed bonus.mp3"; sourceTree = "<group>"; };
 		E56A4E602EDCED7A0010FA24 /* EarthQuiz.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = EarthQuiz.icon; sourceTree = "<group>"; };
+		E5REFACTOR02 /* GameBannerViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameBannerViews.swift; sourceTree = "<group>"; };
+		E5REFACTOR04 /* GameButtonComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameButtonComponents.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -134,6 +138,8 @@
 			children = (
 				E54297112ED678210061FCC2 /* BannerAdView.swift */,
 				A00000040000000000000001 /* ContentView.swift */,
+				E5REFACTOR02 /* GameBannerViews.swift */,
+				E5REFACTOR04 /* GameButtonComponents.swift */,
 				A00000200000000000000001 /* StartView.swift */,
 				A00000220000000000000001 /* GameView.swift */,
 				A00000240000000000000001 /* GameOverView.swift */,
@@ -236,6 +242,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E5REFACTOR01 /* GameBannerViews.swift in Sources */,
+				E5REFACTOR03 /* GameButtonComponents.swift in Sources */,
 				A00000030000000000000001 /* ContentView.swift in Sources */,
 				A00000090000000000000001 /* Category.swift in Sources */,
 				A00000110000000000000001 /* Country.swift in Sources */,
